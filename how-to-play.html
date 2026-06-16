@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>How to Play CrownGrid — Rules, Tips & Solving Strategy</title>
+  <meta name="description" content="Learn how to play CrownGrid: the rules of the crown-placement logic puzzle plus beginner and advanced solving strategies — elimination, region squeezing, and row/column logic." />
+  <meta name="theme-color" content="#0f1226" />
+  <link rel="canonical" href="https://example.com/how-to-play.html" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="crown">♛</span> CrownGrid</a>
+    <nav class="nav">
+      <a href="play.html">Play</a>
+      <a href="how-to-play.html">How to play</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>How to play CrownGrid</h1>
+      <p>CrownGrid is a logic puzzle of pure deduction — no guessing required. Here are the rules and the strategies that solve every board.</p>
+
+      <h2>The rules</h2>
+      <ul>
+        <li>The board is divided into <strong>colored regions</strong>. On an 8×8 board there are 8 regions.</li>
+        <li>Place exactly <strong>one crown in each region</strong>.</li>
+        <li>Place exactly <strong>one crown in each row</strong> and <strong>one in each column</strong>.</li>
+        <li><strong>No two crowns may touch</strong> — not horizontally, vertically, or diagonally.</li>
+      </ul>
+
+      <h2>Controls</h2>
+      <ul>
+        <li>Tap once → <strong>✕</strong> (mark a cell that cannot hold a crown).</li>
+        <li>Tap again → <strong>♛</strong> (place a crown).</li>
+        <li>Tap a third time → clear the cell.</li>
+        <li>Use <strong>✕ marks</strong> liberally — they're your scratch pad for elimination.</li>
+      </ul>
+
+      <h2>Beginner strategy</h2>
+      <ol class="steps">
+        <li><strong>Start with small regions.</strong> A region that occupies only one or two cells forces its crown's location quickly.</li>
+        <li><strong>Eliminate, don't guess.</strong> When you place a crown, mark ✕ on its whole row, whole column, its region, and all eight neighbors.</li>
+        <li><strong>Look for "only one open cell."</strong> If a row, column, or region has just one cell left without an ✕, that's a crown.</li>
+      </ol>
+
+      <h2>Advanced techniques</h2>
+      <ol class="steps">
+        <li><strong>Region squeeze:</strong> if every cell of a region sits inside a single row (or column), then that whole row/column's crown belongs to this region — mark ✕ on the rest of the row in other regions.</li>
+        <li><strong>Adjacency chains:</strong> two crowns can't be neighbors, so placing one prunes up to eight surrounding cells, which often cascades into forced moves elsewhere.</li>
+        <li><strong>Counting:</strong> with N regions across N rows and N columns, each line holds exactly one crown — use that to rule out over-crowded areas.</li>
+      </ol>
+
+      <p style="margin-top:20px;"><a class="cta" href="play.html">▶ Try it now</a></p>
+    </article>
+
+    <!-- AD SLOT -->
+    <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> CrownGrid · <a href="index.html">Home</a> · <a href="play.html">Play</a></p>
+    <p class="disclaimer">
+      CrownGrid is an independent puzzle game and is not affiliated with, endorsed by, or sponsored
+      by LinkedIn Corporation or any other puzzle publisher. Trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Play CrownGrid — Unlimited Queens-Style Logic Puzzle (Free, No Login)</title>
+  <meta name="description" content="Play CrownGrid free: an unlimited crown-placement logic puzzle. No login, no daily limit. New random boards every click, plus a Daily Challenge with streaks." />
+  <meta name="theme-color" content="#0f1226" />
+  <link rel="canonical" href="https://example.com/play.html" />
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Open Graph -->
+  <meta property="og:title" content="Play CrownGrid — Unlimited Logic Puzzle" />
+  <meta property="og:description" content="Crown every region, row and column. Unlimited & free, no login." />
+  <meta property="og:type" content="website" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="crown">♛</span> CrownGrid</a>
+    <nav class="nav">
+      <a href="play.html">Play</a>
+      <a href="how-to-play.html">How to play</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="game-card">
+      <div class="game-top">
+        <span id="mode-label">Unlimited · 8×8</span>
+        <span class="timer" id="timer">0:00</span>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><b id="stat-solved">0</b><span>Solved</span></div>
+        <div class="stat"><b id="stat-streak">0</b><span>Daily streak</span></div>
+        <div class="stat"><b id="stat-best">—</b><span>Best time</span></div>
+      </div>
+
+      <div id="board" class="board" aria-label="Puzzle board"></div>
+      <div id="message" class="message"></div>
+
+      <div class="controls">
+        <button class="btn btn--primary" id="btn-new">↻ New puzzle</button>
+        <div class="size-wrap">
+          <label for="size-select">Size</label>
+          <select id="size-select" aria-label="Board size">
+            <option value="6">6×6 · Easy</option>
+            <option value="7">7×7 · Medium</option>
+            <option value="8" selected>8×8 · Hard</option>
+          </select>
+        </div>
+        <button class="btn" id="btn-daily">★ Daily</button>
+        <button class="btn" id="btn-hint">💡 Hint</button>
+        <button class="btn" id="btn-clear">⌫ Clear</button>
+      </div>
+    </section>
+
+    <p style="text-align:center;color:#c2c7ee;font-size:.92rem;">
+      Tap a cell to mark it <b>✕</b> (can't be a crown), tap again for <b>♛</b>, again to clear.
+    </p>
+
+    <!-- AD SLOT: paste your Google AdSense responsive unit here after approval -->
+    <div class="ad-slot" id="ad-bottom">Ad space (728×90) — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> CrownGrid · <a href="how-to-play.html">How to play</a> · <a href="index.html">Home</a></p>
+    <p class="disclaimer">
+      CrownGrid is an independent puzzle game. It is not affiliated with, endorsed by, or sponsored
+      by LinkedIn Corporation, The New York Times Company, or any other puzzle publisher.
+      All names and trademarks belong to their respective owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <script src="js/generator.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
