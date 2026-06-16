@@ -157,6 +157,12 @@ a { color: #a9b1ff; }
   box-shadow: 0 0 5px rgba(20, 22, 58, .5);
 }
 
+/* Small SunMoon icon (matches the in-game discs: gold sun + dark moon) */
+.sm-ico { display: inline-flex; gap: .12em; align-items: center; vertical-align: middle; }
+.sm-ico i { display: inline-block; width: .72em; height: .72em; border-radius: 50%; }
+.sm-ico .s { background: radial-gradient(circle at 35% 32%, #ffe08a, #ff9e2c); }
+.sm-ico .m { background: radial-gradient(circle at 35% 32%, #3a4080, #14163a); }
+
 /* Win modal (shared by all games) */
 .modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
   background: rgba(8, 10, 26, .68); padding: 20px; }
