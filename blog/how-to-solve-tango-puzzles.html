@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>How to Solve Tango (Binary) Puzzles: A Complete Guide | Funduk Games</title>
+  <meta name="description" content="A complete guide to solving Tango-style binary logic puzzles: the no-three-in-a-row rule, line balance, and = / ✕ clues, plus step-by-step solving techniques." />
+  <meta name="theme-color" content="#0f1226" />
+  <link rel="canonical" href="https://fundukgames.com/blog/how-to-solve-tango-puzzles.html" />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html"><span class="crown">♛</span> Funduk Games</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="index.html">Blog</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>How to Solve Tango (Binary) Puzzles: A Complete Guide</h1>
+      <p>Tango-style puzzles — including LinkedIn's Tango and our <a href="../sunmoon/play.html">SunMoon</a> —
+      are "binary" logic puzzles: every cell is one of two symbols. They look minimal but reward a
+      clear method. As with all good logic puzzles, <strong>no guessing is ever required.</strong></p>
+
+      <h2>The three rules</h2>
+      <ul>
+        <li><strong>No three in a row.</strong> You can never have three identical symbols adjacent,
+        horizontally or vertically.</li>
+        <li><strong>Balance.</strong> Each row and each column contains an equal number of the two
+        symbols.</li>
+        <li><strong>Clues.</strong> A <strong>=</strong> between two cells means they're the same; an
+        <strong>✕</strong> means they differ.</li>
+      </ul>
+
+      <!-- AD SLOT -->
+      <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+
+      <h2>Technique 1: Block the triple</h2>
+      <p>Whenever you see two identical symbols side by side (say ☀️☀️), the cells immediately before
+      and after the pair <em>must</em> be the opposite symbol — otherwise you'd create three in a row.
+      This is the most common opening move on any board.</p>
+
+      <h2>Technique 2: Fill the sandwich</h2>
+      <p>A single empty cell between two identical symbols (☀️ _ ☀️) must be the opposite symbol. If
+      you placed a third ☀️ there you'd have a run; so the middle is forced to 🌙.</p>
+
+      <h2>Technique 3: Complete the count</h2>
+      <p>On a 6×6 board, every line holds exactly three of each symbol. The moment a row or column
+      already contains three of one symbol, <strong>every remaining cell</strong> in that line is the
+      other symbol. Counting toward the balance is how the endgame collapses quickly.</p>
+
+      <h2>Technique 4: Read the clues first</h2>
+      <p>Before anything else, resolve what the = and ✕ clues let you chain. An ✕ between two cells
+      means they're opposites, so the pair always contains one of each. A chain of = clues forces a
+      run — and a run of three is illegal, so long chains immediately bound what's possible.</p>
+
+      <!-- AD SLOT -->
+      <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+
+      <h2>Technique 5: Avoid the forced triple at a distance</h2>
+      <p>Sometimes a cell isn't next to a pair yet, but filling it one way would <em>later</em> force a
+      triple once the balance rule kicks in. If choosing ☀️ in a cell would require three ☀️ in a row
+      to satisfy the count, that cell must be 🌙. Looking one step ahead like this resolves the
+      trickier boards.</p>
+
+      <h2>A worked mini-example</h2>
+      <p>Imagine a row that reads <code>🌙 _ _ ☀️ _ _</code> with three of each required. If the two
+      cells after the moon were both moons, you'd have three moons in a row — illegal — so at least
+      one of them is a sun. Combine that with any ✕ clue in the row and the whole line usually
+      resolves in a couple of steps.</p>
+
+      <h2>Build the instinct</h2>
+      <p>Binary puzzles are pattern recognition: block triples, fill sandwiches, count to the balance,
+      obey the clues. The fastest way to internalize them is volume — play unlimited boards on
+      <a href="../sunmoon/play.html">SunMoon</a> and watch how quickly the openings start to feel
+      automatic.</p>
+
+      <p style="margin-top:20px;"><a class="cta" href="../sunmoon/play.html">▶ Practice on SunMoon</a></p>
+    </article>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Funduk Games ·
+       <a href="../">Games</a> · <a href="index.html">Blog</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a></p>
+    <p class="disclaimer">
+      SunMoon is an independent puzzle game and is not affiliated with, endorsed by, or sponsored by
+      LinkedIn Corporation or any other puzzle publisher. Trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
