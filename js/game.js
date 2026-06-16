@@ -11,10 +11,10 @@
 (function () {
   "use strict";
 
-  // 10-color palette for regions (original colors, distinct & accessible-ish).
+  // 10-color palette for regions — vivid but light enough for dark glyphs to read.
   const PALETTE = [
-    "#f6c0c0", "#c7e2b3", "#bcd4f0", "#f3e1a8", "#d8c2ec",
-    "#f7cda2", "#b6e3da", "#e9b6cf", "#c9c9a3", "#a8d8ef"
+    "#ff8a8a", "#9bd86e", "#7fb4f5", "#ffd84d", "#c293f0",
+    "#ffb066", "#5fd6c4", "#ff9ec9", "#d0d24a", "#74c7f0"
   ];
 
   // Cell states (user-controlled base layer)
@@ -208,12 +208,18 @@
   function onPointerUp() {
     if (!pointer.active) return;
     pointer.active = false;
-    if (!pointer.moved) crownToggle(pointer.startR, pointer.startC); // a plain tap
+    if (!pointer.moved) cycleCell(pointer.startR, pointer.startC); // a plain tap
   }
 
-  function crownToggle(r, c) {
+  // A plain tap cycles the cell: empty -> ✕ -> ♛ -> empty.
+  // If the cell already shows an auto ✕, the first tap jumps straight to a crown
+  // (so it doesn't look like the tap did nothing).
+  function cycleCell(r, c) {
     if (state.solved) return;
-    state.marks[r][c] = state.marks[r][c] === CROWN ? EMPTY : CROWN;
+    const base = state.marks[r][c];
+    if (base === CROWN) state.marks[r][c] = EMPTY;
+    else if (base === MARK) state.marks[r][c] = CROWN;
+    else state.marks[r][c] = state.auto[r][c] ? CROWN : MARK; // base === EMPTY
     recomputeAuto();
     repaintAll();
     clearConflicts();
