@@ -74,7 +74,7 @@ a { color: #a9b1ff; }
   aspect-ratio: 1 / 1;
   width: 100%;
   margin: 0 auto 14px;
-  touch-action: manipulation;
+  touch-action: none; /* let drag-to-mark work without scrolling the page */
 }
 .cell {
   border: 0; margin: 0; padding: 0;
@@ -90,7 +90,8 @@ a { color: #a9b1ff; }
 }
 .cell:hover { box-shadow: inset 0 0 0 2px rgba(0,0,0,.18); }
 .cell:active { transform: scale(.94); }
-.cell.is-mark { color: rgba(0,0,0,.45); font-size: clamp(12px, 4vw, 20px); }
+.cell.is-mark { color: rgba(0,0,0,.5); font-size: clamp(12px, 4vw, 20px); }
+.cell.is-auto { color: rgba(0,0,0,.24); font-size: clamp(12px, 4vw, 20px); } /* auto-filled ✕ is fainter */
 .cell.is-crown { color: #1b1d2b; }
 .cell.is-bad { box-shadow: inset 0 0 0 3px #e74c3c; animation: shake .25s; }
 .cell.flash { box-shadow: inset 0 0 0 3px var(--accent-2); }

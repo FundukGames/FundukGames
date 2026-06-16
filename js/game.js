@@ -1,6 +1,12 @@
 /*
  * CrownGrid — game UI & interaction layer.
  * Depends on generator.js (window.CrownGrid.generate / dailySeed).
+ *
+ * Interaction model:
+ *   - Tap/click a cell  -> place or remove a crown (♛).
+ *   - Placing a crown auto-marks ✕ on its row, column, region and neighbors.
+ *     Removing it recomputes auto-marks, so they disappear when no longer implied.
+ *   - Press and drag across cells -> paint ✕ marks (drag again over them to erase).
  */
 (function () {
   "use strict";
@@ -11,12 +17,13 @@
     "#f7cda2", "#b6e3da", "#e9b6cf", "#c9c9a3", "#a8d8ef"
   ];
 
-  // Cell states
+  // Cell states (user-controlled base layer)
   const EMPTY = 0, MARK = 1, CROWN = 2;
 
   const els = {};
-  let state = null; // { size, regions, solution, marks, mode, seed, startTs, solved }
+  let state = null; // { size, regions, solution, marks, auto, mode, solved, elapsedMs }
   let timerId = null;
+  const pointer = { active: false, moved: false, startR: 0, startC: 0, lastKey: "", paintVal: MARK };
 
   // ---- localStorage stats ----------------------------------------------
   const LS = {
@@ -71,8 +78,7 @@
     const opts = { size: size };
     if (mode === "daily") {
       opts.seed = window.CrownGrid.dailySeed();
-      // Daily uses a fixed size so everyone shares the same board.
-      opts.size = 8;
+      opts.size = 8; // shared board for everyone
       size = 8;
     }
     const puzzle = window.CrownGrid.generate(opts);
@@ -81,8 +87,10 @@
       regions: puzzle.regions,
       solution: puzzle.solution,
       marks: Array.from({ length: puzzle.size }, () => new Array(puzzle.size).fill(EMPTY)),
+      auto: Array.from({ length: puzzle.size }, () => new Array(puzzle.size).fill(false)),
       mode: mode,
-      solved: false
+      solved: false,
+      elapsedMs: 0
     };
     els.modeLabel.textContent = mode === "daily"
       ? "Daily Challenge · " + todayKey()
@@ -119,20 +127,95 @@
 
   function paintCell(r, c) {
     const cell = cellAt(r, c);
+    if (!cell) return;
     const v = state.marks[r][c];
-    cell.classList.toggle("is-mark", v === MARK);
+    const autoX = state.auto[r][c] && v !== CROWN;
+    const showX = v === MARK || autoX;
     cell.classList.toggle("is-crown", v === CROWN);
-    cell.textContent = v === CROWN ? "♛" : v === MARK ? "✕" : "";
+    cell.classList.toggle("is-mark", v === MARK);
+    cell.classList.toggle("is-auto", autoX && v !== MARK);
+    cell.textContent = v === CROWN ? "♛" : showX ? "✕" : "";
   }
 
-  // ---- interaction -------------------------------------------------------
-  function onBoardClick(e) {
-    const cell = e.target.closest(".cell");
-    if (!cell || state.solved) return;
+  function repaintAll() {
+    for (let r = 0; r < state.size; r++)
+      for (let c = 0; c < state.size; c++) paintCell(r, c);
+  }
+
+  // ---- auto-marks: every cell a crown "attacks" gets an ✕ ----------------
+  function markAuto(r, c) {
+    if (state.marks[r][c] !== CROWN) state.auto[r][c] = true;
+  }
+  function recomputeAuto() {
+    const n = state.size;
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) state.auto[r][c] = false;
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        if (state.marks[r][c] !== CROWN) continue;
+        const reg = state.regions[r][c];
+        for (let k = 0; k < n; k++) { markAuto(r, k); markAuto(k, c); }
+        for (let rr = 0; rr < n; rr++)
+          for (let cc = 0; cc < n; cc++)
+            if (state.regions[rr][cc] === reg) markAuto(rr, cc);
+        for (let dr = -1; dr <= 1; dr++)
+          for (let dc = -1; dc <= 1; dc++) {
+            const nr = r + dr, nc = c + dc;
+            if (nr >= 0 && nc >= 0 && nr < n && nc < n) markAuto(nr, nc);
+          }
+      }
+    }
+  }
+
+  // ---- interaction (pointer: works for mouse + touch) --------------------
+  function onPointerDown(e) {
+    if (state.solved) return;
+    const cell = e.target.closest && e.target.closest(".cell");
+    if (!cell || cell.parentElement !== els.board) return;
+    pointer.active = true;
+    pointer.moved = false;
+    pointer.startR = +cell.dataset.r;
+    pointer.startC = +cell.dataset.c;
+    pointer.lastKey = pointer.startR + "," + pointer.startC;
+  }
+
+  function onPointerMove(e) {
+    if (!pointer.active) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const cell = el && el.closest && el.closest(".cell");
+    if (!cell || cell.parentElement !== els.board) return;
     const r = +cell.dataset.r, c = +cell.dataset.c;
-    // cycle empty -> mark -> crown -> empty
-    state.marks[r][c] = (state.marks[r][c] + 1) % 3;
+    const key = r + "," + c;
+    if (!pointer.moved) {
+      // First movement -> this gesture is a drag, not a click. Decide paint mode
+      // from the starting cell: if it was a manual ✕, we erase; otherwise we draw.
+      pointer.moved = true;
+      const sv = state.marks[pointer.startR][pointer.startC];
+      pointer.paintVal = sv === MARK ? EMPTY : MARK;
+      applyPaint(pointer.startR, pointer.startC);
+    }
+    if (key === pointer.lastKey) { e.preventDefault(); return; }
+    applyPaint(r, c);
+    pointer.lastKey = key;
+    e.preventDefault();
+  }
+
+  function applyPaint(r, c) {
+    if (state.marks[r][c] === CROWN) return; // never paint over crowns
+    state.marks[r][c] = pointer.paintVal;
     paintCell(r, c);
+  }
+
+  function onPointerUp() {
+    if (!pointer.active) return;
+    pointer.active = false;
+    if (!pointer.moved) crownToggle(pointer.startR, pointer.startC); // a plain tap
+  }
+
+  function crownToggle(r, c) {
+    if (state.solved) return;
+    state.marks[r][c] = state.marks[r][c] === CROWN ? EMPTY : CROWN;
+    recomputeAuto();
+    repaintAll();
     clearConflicts();
     checkWin();
   }
@@ -151,7 +234,6 @@
   }
 
   function findConflicts() {
-    const n = state.size;
     const crowns = crownList();
     const bad = new Set();
     const rowCnt = {}, colCnt = {}, regCnt = {};
@@ -176,8 +258,7 @@
 
   function clearConflicts() {
     els.board.querySelectorAll(".cell.is-bad").forEach((c) => c.classList.remove("is-bad"));
-    const bad = findConflicts();
-    bad.forEach((key) => {
+    findConflicts().forEach((key) => {
       const [r, c] = key.split(",");
       const cell = cellAt(r, c);
       if (cell) cell.classList.add("is-bad");
@@ -185,9 +266,8 @@
   }
 
   function checkWin() {
-    const n = state.size;
     const crowns = crownList();
-    if (crowns.length !== n) return false;
+    if (crowns.length !== state.size) return false;
     if (findConflicts().size > 0) return false;
     win();
     return true;
@@ -197,10 +277,10 @@
     state.solved = true;
     stopTimer();
     const elapsed = Date.now() - state.startTs;
+    state.elapsedMs = elapsed;
     const stats = loadStats();
     stats.solved += 1;
 
-    // Daily streak handling
     if (state.mode === "daily") {
       const tk = todayKey();
       if (stats.lastDaily !== tk) {
@@ -208,7 +288,6 @@
         stats.lastDaily = tk;
       }
     }
-    // Best time per size
     if (!stats.best[state.size] || elapsed < stats.best[state.size]) {
       stats.best[state.size] = elapsed;
     }
@@ -217,13 +296,12 @@
     LS.set("cg_lastDaily", stats.lastDaily);
     LS.set("cg_best", stats.best);
     renderStats();
-    setMessage("🎉 Solved in " + formatTime(elapsed) + "!", "ok");
+    setMessage("🎉 Solved in " + formatTime(elapsed) + "! Tap Share to brag.", "ok");
   }
 
-  // ---- helpers (hint / clear) -------------------------------------------
+  // ---- hint / clear ------------------------------------------------------
   function hint() {
     if (state.solved) return;
-    // 1) If any placed crown is wrong, flag the first one.
     for (let r = 0; r < state.size; r++) {
       for (let c = 0; c < state.size; c++) {
         if (state.marks[r][c] === CROWN && state.solution[r] !== c) {
@@ -233,12 +311,12 @@
         }
       }
     }
-    // 2) Otherwise reveal one correct crown not yet placed.
     for (let r = 0; r < state.size; r++) {
       const c = state.solution[r];
       if (state.marks[r][c] !== CROWN) {
         state.marks[r][c] = CROWN;
-        paintCell(r, c);
+        recomputeAuto();
+        repaintAll();
         flash(cellAt(r, c));
         clearConflicts();
         checkWin();
@@ -259,9 +337,10 @@
     for (let r = 0; r < state.size; r++)
       for (let c = 0; c < state.size; c++) {
         state.marks[r][c] = EMPTY;
-        paintCell(r, c);
+        state.auto[r][c] = false;
       }
     state.solved = false;
+    repaintAll();
     clearConflicts();
     setMessage("", "");
     startTimer();
@@ -270,6 +349,45 @@
   function setMessage(text, kind) {
     els.message.textContent = text;
     els.message.className = "message" + (kind ? " message--" + kind : "");
+  }
+
+  // ---- share (Wordle-style, spoiler-free) --------------------------------
+  function shareResult() {
+    const base = location.origin + location.pathname.replace(/[^/]*$/, "");
+    const lines = ["👑 CrownGrid"];
+    lines.push(state.mode === "daily" ? "Daily · " + todayKey() : "Unlimited · " + state.size + "×" + state.size);
+    if (state.solved) {
+      lines.push("✅ Solved in " + formatTime(state.elapsedMs) + " ⏱️");
+      const s = loadStats();
+      if (state.mode === "daily" && s.streak > 0) lines.push("🔥 Streak: " + s.streak);
+    } else {
+      lines.push("Can you crown the grid? 👑");
+    }
+    lines.push(base);
+    const text = lines.join("\n");
+
+    if (navigator.share) {
+      navigator.share({ title: "CrownGrid", text: text }).catch(function () {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        function () { setMessage("📋 Result copied — paste it anywhere!", "ok"); },
+        function () { fallbackCopy(text); }
+      );
+    } else {
+      fallbackCopy(text);
+    }
+  }
+
+  function fallbackCopy(text) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); setMessage("📋 Result copied!", "ok"); }
+    catch (e) { setMessage("Couldn't copy automatically — long-press to copy.", "warn"); }
+    document.body.removeChild(ta);
   }
 
   // ---- boot --------------------------------------------------------------
@@ -282,14 +400,19 @@
     els.statStreak = document.getElementById("stat-streak");
     els.statBest = document.getElementById("stat-best");
 
-    els.board.addEventListener("click", onBoardClick);
+    els.board.addEventListener("pointerdown", onPointerDown);
+    els.board.addEventListener("pointermove", onPointerMove);
+    els.board.addEventListener("contextmenu", (e) => e.preventDefault());
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
+
     document.getElementById("btn-daily").addEventListener("click", () => newGame("daily"));
     document.getElementById("btn-new").addEventListener("click", () => {
-      const size = +document.getElementById("size-select").value;
-      newGame("unlimited", size);
+      newGame("unlimited", +document.getElementById("size-select").value);
     });
     document.getElementById("btn-hint").addEventListener("click", hint);
     document.getElementById("btn-clear").addEventListener("click", clearBoard);
+    document.getElementById("btn-share").addEventListener("click", shareResult);
     document.getElementById("size-select").addEventListener("change", () => {
       newGame("unlimited", +document.getElementById("size-select").value);
     });
