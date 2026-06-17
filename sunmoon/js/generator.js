@@ -6,9 +6,11 @@
  *   - each row and each column has equal numbers of ☀ and 🌙 (N/2 each),
  *   - "=" / "✕" edge clues between neighbors are satisfied (same / different).
  *
- * Every generated board is solvable by PURE LOGIC (constraint propagation) —
- * no guessing — which also makes the solution unique. Framework-free; attaches
- * window.SunMoon. Mechanics (rules) are not copyrightable; name/visuals original.
+ * Every board is solvable by pure logic: basic constraint propagation plus
+ * one-step "proof by contradiction" (if a value forces a contradiction, the
+ * other value is forced). That keeps clue counts low (a real puzzle, not a
+ * fill-in) while guaranteeing a unique, no-guess solution. Framework-free;
+ * attaches window.SunMoon. Mechanics aren't copyrightable; name/visuals original.
  */
 (function () {
   "use strict";
@@ -30,7 +32,6 @@
     return arr;
   }
 
-  // --- A full valid solution: balanced rows/cols, no 3-in-a-row -----------
   function makeSolution(n, rng) {
     const half = n / 2;
     const grid = Array.from({ length: n }, () => new Array(n).fill(-1));
@@ -53,51 +54,41 @@
     return bt(0) ? grid : null;
   }
 
-  // --- Logic solver: fill only FORCED cells via constraint propagation -----
-  // Returns { grid, solved, contradiction }. "solved" means pure deduction
-  // (no guessing) filled the whole board.
-  function logicSolve(n, givens, h, v) {
-    const half = n / 2;
-    const g = givens.map((row) => row.slice());
-    let contradiction = false, changed = true;
-
+  // Basic constraint propagation (mutates g). Returns true if a contradiction.
+  function propagate(n, g, h, v, half) {
+    let changed = true, bad = false;
     function set(r, c, val) {
       if (g[r][c] === val) return;
-      if (g[r][c] !== -1) { contradiction = true; return; }
+      if (g[r][c] !== -1) { bad = true; return; }
       g[r][c] = val; changed = true;
     }
-
-    while (changed && !contradiction) {
+    while (changed && !bad) {
       changed = false;
-
-      // Balance: a line that already has N/2 of one symbol forces the rest.
-      for (let r = 0; r < n && !contradiction; r++) {
+      // Balance
+      for (let r = 0; r < n && !bad; r++) {
         let z = 0, o = 0;
         for (let c = 0; c < n; c++) { if (g[r][c] === 0) z++; else if (g[r][c] === 1) o++; }
-        if (z > half || o > half) contradiction = true;
+        if (z > half || o > half) bad = true;
         else if (z === half) for (let c = 0; c < n; c++) if (g[r][c] === -1) set(r, c, 1);
         else if (o === half) for (let c = 0; c < n; c++) if (g[r][c] === -1) set(r, c, 0);
       }
-      for (let c = 0; c < n && !contradiction; c++) {
+      for (let c = 0; c < n && !bad; c++) {
         let z = 0, o = 0;
         for (let r = 0; r < n; r++) { if (g[r][c] === 0) z++; else if (g[r][c] === 1) o++; }
-        if (z > half || o > half) contradiction = true;
+        if (z > half || o > half) bad = true;
         else if (z === half) for (let r = 0; r < n; r++) if (g[r][c] === -1) set(r, c, 1);
         else if (o === half) for (let r = 0; r < n; r++) if (g[r][c] === -1) set(r, c, 0);
       }
-
-      // No-three: in any run of 3, two equal knowns force the third opposite.
-      const triple = (a, b, cc) => {
-        // a,b,cc are [r,c] cells of three consecutive
+      // No-three
+      const tri = (a, b, cc) => {
         const va = g[a[0]][a[1]], vb = g[b[0]][b[1]], vc = g[cc[0]][cc[1]];
-        if (va !== -1 && va === vb && vc === -1) set(cc[0], cc[1], 1 - va);       // A A _
-        else if (vb !== -1 && vb === vc && va === -1) set(a[0], a[1], 1 - vb);    // _ A A
-        else if (va !== -1 && va === vc && vb === -1) set(b[0], b[1], 1 - va);    // A _ A
+        if (va !== -1 && va === vb && vc === -1) set(cc[0], cc[1], 1 - va);
+        else if (vb !== -1 && vb === vc && va === -1) set(a[0], a[1], 1 - vb);
+        else if (va !== -1 && va === vc && vb === -1) set(b[0], b[1], 1 - va);
       };
-      for (let r = 0; r < n; r++) for (let c = 0; c + 2 < n; c++) triple([r, c], [r, c + 1], [r, c + 2]);
-      for (let c = 0; c < n; c++) for (let r = 0; r + 2 < n; r++) triple([r, c], [r + 1, c], [r + 2, c]);
-
-      // Edge clues: a known endpoint forces its partner.
+      for (let r = 0; r < n; r++) for (let c = 0; c + 2 < n; c++) tri([r, c], [r, c + 1], [r, c + 2]);
+      for (let c = 0; c < n; c++) for (let r = 0; r + 2 < n; r++) tri([r, c], [r + 1, c], [r + 2, c]);
+      // Edges
       for (let r = 0; r < n; r++) {
         for (let c = 0; c < n; c++) {
           if (c < n - 1 && h[r][c]) {
@@ -113,23 +104,51 @@
         }
       }
     }
-
-    let solved = !contradiction;
-    for (let r = 0; r < n && solved; r++) for (let c = 0; c < n; c++) if (g[r][c] === -1) { solved = false; break; }
-    return { grid: g, solved: solved, contradiction: contradiction };
+    return bad;
   }
 
-  // --- Generate a puzzle solvable by pure logic (hence unique) ------------
+  function isFull(n, g) {
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (g[r][c] === -1) return false;
+    return true;
+  }
+
+  // Logic solver: basic propagation + one-step contradiction reasoning.
+  function logicSolve(n, givens, h, v) {
+    const half = n / 2;
+    const g = givens.map((row) => row.slice());
+    if (propagate(n, g, h, v, half)) return { solved: false };
+
+    let progress = true;
+    while (progress && !isFull(n, g)) {
+      progress = false;
+      for (let r = 0; r < n && !progress; r++) {
+        for (let c = 0; c < n && !progress; c++) {
+          if (g[r][c] !== -1) continue;
+          for (let val = 0; val <= 1; val++) {
+            const t = g.map((row) => row.slice());
+            t[r][c] = val;
+            if (propagate(n, t, h, v, half)) {       // val is impossible
+              g[r][c] = 1 - val;
+              if (propagate(n, g, h, v, half)) return { solved: false };
+              progress = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+    return { solved: isFull(n, g), grid: g };
+  }
+
   function generate(opts) {
     opts = opts || {};
-    const n = (opts.size || 6) & ~1; // even
+    const n = (opts.size || 6) & ~1;
     const rng = typeof opts.seed === "number" ? mulberry32(opts.seed) : Math.random;
 
     let sol = null;
     for (let i = 0; i < 60 && !sol; i++) sol = makeSolution(n, rng);
     if (!sol) sol = makeSolution(n, Math.random);
 
-    // Start fully constrained (all givens + all edges) — trivially solvable.
     const givens = sol.map((row) => row.slice());
     const h = Array.from({ length: n }, () => new Array(n).fill(0));
     const v = Array.from({ length: n }, () => new Array(n).fill(0));
@@ -139,8 +158,8 @@
         if (r < n - 1) v[r][c] = sol[r][c] === sol[r + 1][c] ? 1 : 2;
       }
 
-    // Remove clues (givens first, then edges) while the board still solves by
-    // pure logic. Keeping logic-solvability guarantees a single, deducible path.
+    // Remove clues (givens first, then edges) while the board stays solvable by
+    // logic. The stronger solver lets us strip far more clues — a real puzzle.
     const givenHandles = [];
     for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) givenHandles.push(["g", r, c]);
     const edgeHandles = [];
@@ -156,7 +175,6 @@
       if (type === "g") { prev = givens[r][c]; givens[r][c] = -1; }
       else if (type === "h") { prev = h[r][c]; h[r][c] = 0; }
       else { prev = v[r][c]; v[r][c] = 0; }
-
       if (!logicSolve(n, givens, h, v).solved) {
         if (type === "g") givens[r][c] = prev;
         else if (type === "h") h[r][c] = prev;

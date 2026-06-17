@@ -55,11 +55,45 @@
   }
 
   // --- Step 2: grow N contiguous regions, one per crown seed ---
-  function growRegions(n, solCols, rng) {
+  // Two-phase: phase 1 grows every region up to `minSize` (round-robin) so
+  // there are no trivial 1- or 2-cell regions; phase 2 fills the rest with
+  // random frontier growth to keep irregular, deduction-worthy shapes.
+  function growRegions(n, solCols, rng, minSize) {
     const region = Array.from({ length: n }, () => new Array(n).fill(-1));
+    const size = new Array(n).fill(1);
     for (let r = 0; r < n; r++) region[r][solCols[r]] = r; // region id == seed row
     let remaining = n * n - n;
     const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+    function freeNeighborsOf(reg) {
+      const out = [];
+      for (let r = 0; r < n; r++)
+        for (let c = 0; c < n; c++) {
+          if (region[r][c] !== reg) continue;
+          for (const [dr, dc] of dirs) {
+            const nr = r + dr, nc = c + dc;
+            if (nr < 0 || nc < 0 || nr >= n || nc >= n) continue;
+            if (region[nr][nc] === -1) out.push([nr, nc]);
+          }
+        }
+      return out;
+    }
+
+    if (minSize > 1) {
+      let progress = true;
+      while (progress && remaining > 0) {
+        progress = false;
+        for (const reg of shuffle([...Array(n).keys()], rng)) {
+          if (size[reg] >= minSize) continue;
+          const fr = freeNeighborsOf(reg);
+          if (fr.length) {
+            const [r, c] = fr[Math.floor(rng() * fr.length)];
+            region[r][c] = reg; size[reg]++; remaining--; progress = true;
+            if (remaining === 0) break;
+          }
+        }
+      }
+    }
 
     while (remaining > 0) {
       const edges = [];
@@ -74,10 +108,15 @@
         }
       }
       const [r, c, reg] = edges[Math.floor(rng() * edges.length)];
-      region[r][c] = reg;
-      remaining--;
+      region[r][c] = reg; size[reg]++; remaining--;
     }
     return region;
+  }
+
+  function minRegionSize(n, region) {
+    const cnt = new Array(n).fill(0);
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) cnt[region[r][c]]++;
+    return Math.min.apply(null, cnt);
   }
 
   // --- Solver: count solutions up to `limit` (for uniqueness checking) ---
@@ -122,24 +161,37 @@
     const rng = typeof opts.seed === "number" ? mulberry32(opts.seed) : Math.random;
     const budget = attemptBudget(n);
 
+    // We PREFER no 1-cell regions (a lone region forces its crown for free and
+    // makes the board trivial), but uniqueness is mandatory and balancing region
+    // sizes wrecks uniqueness on 7×7/8×8. So: grow irregular "blob" regions
+    // (good uniqueness), require uniqueness, and among unique boards keep the one
+    // with the largest minimum region — returning early once no region is size 1.
+    const minSize = 2;
+
     let attempts = 0;
     let lastSol = null;
+    let best = null;        // best UNIQUE board found (largest min region)
+    let firstBestAt = -1;   // attempt index when we first had a usable unique board
+    const POST_BEST_CAP = 4000; // stop chasing a min-size upgrade after this many extra tries
     while (attempts < budget) {
       const sol = makeSolution(n, rng);
       if (!sol) { attempts++; continue; }
       lastSol = sol;
-      // Try several region layouts per solution before reshuffling the solution.
       for (let g = 0; g < 20 && attempts < budget; g++) {
         attempts++;
-        const regions = growRegions(n, sol, rng);
-        if (countSolutions(n, regions, 2) === 1) {
-          return { size: n, regions: regions, solution: sol };
-        }
+        const regions = growRegions(n, sol, rng, 1);
+        if (countSolutions(n, regions, 2) !== 1) continue; // uniqueness mandatory
+        const m = minRegionSize(n, regions);
+        if (m >= minSize) return { size: n, regions: regions, solution: sol };
+        if (!best || m > best.m) best = { size: n, regions: regions, solution: sol, m: m };
+        if (firstBestAt < 0) firstBestAt = attempts;
       }
+      if (firstBestAt >= 0 && attempts - firstBestAt > POST_BEST_CAP) break; // ship best
     }
-    // Fallback (rare for n<=8): a guaranteed-solvable board so we never hard-fail.
-    const sol = lastSol || makeSolution(n, Math.random);
-    return { size: n, regions: growRegions(n, sol, rng), solution: sol };
+    if (best) return { size: best.size, regions: best.regions, solution: best.solution };
+    // Last resort (essentially never): a guaranteed-solvable board.
+    const sol = lastSol || makeSolution(n, Math.random) || makeSolution(n, rng);
+    return { size: n, regions: growRegions(n, sol, rng, 1), solution: sol };
   }
 
   // Deterministic seed for a given calendar day (UTC) -> integer YYYYMMDD.
