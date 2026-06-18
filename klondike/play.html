@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>Play Klondike Solitaire — Free Unlimited Solitaire (No Login)</title>
+  <meta name="description" content="Play free unlimited Klondike Solitaire in your browser — draw one, drag-and-drop or tap to auto-move, unlimited deals, a Daily Challenge with streaks, undo and timer. No login required." />
+  <meta name="theme-color" content="#0f1226" />
+  <link rel="canonical" href="https://fundukgames.com/klondike/play.html" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <meta property="og:title" content="Play Klondike Solitaire — Free &amp; Unlimited" />
+  <meta property="og:description" content="Classic draw-one Klondike Solitaire. Unlimited deals, daily challenge, no login." />
+  <meta property="og:type" content="website" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="crown">♠</span> Klondike Solitaire</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="play.html">Play</a>
+      <a href="how-to-play.html">How to play</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="game-card" id="sol">
+      <div class="sol-bar">
+        <span id="mode-label">Unlimited</span>
+        <span class="sol-foundcount">🏠 <span id="found-count">0/52</span></span>
+        <span class="timer" id="timer">0:00</span>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><b id="stat-solved">0</b><span>Solved</span></div>
+        <div class="stat"><b id="stat-streak">0</b><span>Daily streak</span></div>
+        <div class="stat"><b id="stat-best">—</b><span>Best time</span></div>
+      </div>
+
+      <div id="board" class="sol-board" aria-label="Klondike Solitaire board"></div>
+
+      <div id="message" class="message"></div>
+
+      <div class="controls">
+        <button class="btn btn--primary" id="btn-new">↻ New deal</button>
+        <button class="btn" id="btn-daily">★ Daily</button>
+        <button class="btn" id="btn-undo" disabled>↶ Undo</button>
+        <button class="btn" id="btn-share">🔗 Share</button>
+      </div>
+    </section>
+
+    <p style="text-align:center;color:#c2c7ee;font-size:.92rem;">
+      <b>Drag</b> a card or a run to move it · <b>tap</b> a card to send it home automatically ·
+      <b>tap the deck</b> (top right) to draw. Build the four foundations up from Ace to King.
+    </p>
+
+    <!-- AD SLOT -->
+    <div class="ad-slot" id="ad-bottom">Ad space (728×90) — your AdSense unit goes here</div>
+
+    <div id="win-modal" class="modal" hidden>
+      <div class="modal__card">
+        <button class="modal__close" id="win-close" aria-label="Close">✕</button>
+        <h2 id="win-title">🎉 You cleared the table!</h2>
+        <p id="win-sub"></p>
+        <div class="modal__actions">
+          <button class="btn btn--primary" id="win-new">↻ New deal</button>
+          <a class="btn" href="../spider/play.html">Try Spider 🕷️ →</a>
+          <button class="btn" id="win-share">🔗 Share result</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Klondike Solitaire — a <a href="../">Funduk Games</a> puzzle ·
+       <a href="index.html">Home</a> · <a href="how-to-play.html">How to play</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a></p>
+    <p class="disclaimer">Klondike Solitaire is a classic public-domain card game. Funduk Games is independent and not affiliated with Microsoft or any other publisher.</p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <script src="../js/solitaire.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

@@ -244,3 +244,58 @@ a { color: #a9b1ff; }
   .nav a { margin-left: 12px; font-size: .9rem; }
   .game-card { padding: 12px; border-radius: 16px; }
 }
+
+/* ───────────────────────── Solitaire (Klondike / Spider / FreeCell) ───────────────────────── */
+/* Shared by all three card games. --sol-card-w is measured & set by solitaire.js. */
+.sol-game { --sol-gap: 6px; --sol-card-w: 56px; max-width: 760px; margin: 14px auto; }
+.sol-board { background: #14163a; border-radius: 14px; padding: 10px; box-shadow: var(--shadow); }
+.sol-board--scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.sol-toprow { display: flex; align-items: flex-start; gap: var(--sol-gap); margin-bottom: 16px; }
+.sol-group { display: flex; gap: var(--sol-gap); }
+.sol-spacer { flex: 1 1 auto; min-width: 8px; }
+.sol-tableau { display: grid; gap: var(--sol-gap); }
+
+/* A pile is a positioning context; cards are absolutely placed inside it. */
+.sol-pile { position: relative; width: var(--sol-card-w); }
+.sol-pile--tableau { width: auto; } /* width comes from the grid track */
+.sol-slot {
+  aspect-ratio: 5 / 7; border-radius: 7px;
+  background: rgba(255,255,255,.05); border: 1.5px dashed rgba(255,255,255,.16);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,.30); font-size: calc(var(--sol-card-w) * .42); line-height: 1;
+}
+.sol-pile.is-drop { outline: 2.5px solid var(--accent-2); outline-offset: 1px; border-radius: 8px; }
+
+/* Cards */
+.sol-card {
+  position: absolute; left: 0; top: 0; width: 100%; aspect-ratio: 5 / 7;
+  border-radius: 7px; background: #fdfdff; box-shadow: 0 1px 2px rgba(0,0,0,.45);
+  user-select: none; -webkit-user-select: none; touch-action: none;
+  font-weight: 800; line-height: 1; overflow: hidden;
+}
+.sol-card.is-red { color: #d8334a; }
+.sol-card.is-black { color: #1b1d2b; }
+.sol-card__corner {
+  position: absolute; top: 4%; left: 7%;
+  display: flex; flex-direction: column; align-items: center;
+  font-size: calc(var(--sol-card-w) * .32);
+}
+.sol-card__corner .s { font-size: calc(var(--sol-card-w) * .26); margin-top: -2px; }
+.sol-card__pip {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-size: calc(var(--sol-card-w) * .62); opacity: .9;
+}
+.sol-card--down { background: repeating-linear-gradient(45deg, #3a4080 0 6px, #2b2f6e 6px 12px); border: 1.5px solid #4a51a0; }
+.sol-card--down .sol-card__corner, .sol-card--down .sol-card__pip { display: none; }
+.sol-card.is-movable { cursor: grab; }
+.sol-card.is-sel { outline: 2.5px solid var(--accent); outline-offset: -1px; }
+.sol-card.is-dragging { cursor: grabbing; box-shadow: 0 10px 24px rgba(0,0,0,.5); z-index: 1000; }
+.sol-card.is-hint { animation: solpulse .6s ease 2; }
+@keyframes solpulse { 0%,100%{ box-shadow:0 1px 2px rgba(0,0,0,.45);} 50%{ box-shadow:0 0 0 3px var(--accent-2);} }
+
+/* Stock that recycles shows a ↻; empty foundation slots show suit hints via .sol-slot text. */
+.sol-stock { cursor: pointer; }
+
+.sol-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #c7ccff; margin: 4px 2px 12px; font-weight: 700; }
+.sol-bar .timer { color: var(--ink); }
+.sol-foundcount { font-variant-numeric: tabular-nums; }

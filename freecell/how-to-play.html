@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>How to Play FreeCell — Rules, Tips &amp; Strategy</title>
+  <meta name="description" content="Learn how to play FreeCell Solitaire: the rules, how the free cells and move limit work, and winning strategies — planning empty columns, keeping cells open, and unstacking long runs." />
+  <meta name="theme-color" content="#0f1226" />
+  <link rel="canonical" href="https://fundukgames.com/freecell/how-to-play.html" />
+  <link rel="stylesheet" href="../css/style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="crown">🃏</span> FreeCell</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="play.html">Play</a>
+      <a href="how-to-play.html">How to play</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>How to play FreeCell</h1>
+      <p>FreeCell is an open-information Solitaire: all 52 cards are dealt face up, so every game is a
+      puzzle you can reason through. The goal is to build the four foundations from Ace to King.</p>
+
+      <h2>The layout</h2>
+      <ul>
+        <li><strong>Eight columns</strong> hold all 52 cards, face up, from the start.</li>
+        <li><strong>Four free cells</strong> (top left) each store a single card.</li>
+        <li><strong>Four foundations</strong> (top right) build up by suit, Ace → King.</li>
+      </ul>
+
+      <h2>The rules</h2>
+      <ul>
+        <li>Build columns <strong>down in alternating colours</strong>.</li>
+        <li>A free cell holds <strong>one card</strong> of any kind.</li>
+        <li><strong>Any</strong> card may move onto an empty column.</li>
+        <li>You can move a run of several cards at once only if you have the space to do it one card at
+        a time: the limit is <strong>(1 + free cells) × 2<sup>(empty columns)</sup></strong>.</li>
+      </ul>
+
+      <h2>Controls</h2>
+      <ul>
+        <li><strong>Drag</strong> a card or run to place it.</li>
+        <li><strong>Tap</strong> a card to auto-move it — foundation first, otherwise a sensible column or free cell.</li>
+        <li><strong>Undo</strong> reverses your last move.</li>
+      </ul>
+
+      <h2>Winning strategy</h2>
+      <ol class="steps">
+        <li><strong>Keep free cells empty.</strong> Each occupied cell halves your ability to move runs. Cells are temporary parking, not storage.</li>
+        <li><strong>Make an empty column early.</strong> Empty columns are even more valuable than free cells — they multiply how many cards you can shift.</li>
+        <li><strong>Dig for the Aces and twos.</strong> Get the low cards onto the foundations so they stop blocking the columns.</li>
+        <li><strong>Plan the whole sequence.</strong> Before you start a long move, count your free cells and empty columns to be sure the run will land.</li>
+        <li><strong>Don't bury what you need.</strong> Since you can see every card, look ahead before dropping a card on top of one you'll want soon.</li>
+      </ol>
+
+      <p style="margin-top:20px;"><a class="cta" href="play.html">▶ Try it now</a></p>
+    </article>
+
+    <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> FreeCell — a <a href="../">Funduk Games</a> puzzle ·
+       <a href="index.html">Home</a> · <a href="play.html">Play</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a></p>
+    <p class="disclaimer">FreeCell is a classic public-domain card game. Funduk Games is independent and not affiliated with Microsoft or any other publisher.</p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
