@@ -246,11 +246,21 @@ a { color: #a9b1ff; }
 }
 
 /* ───────────────────────── Solitaire (Klondike / Spider / FreeCell) ───────────────────────── */
-/* Shared by all three card games. --sol-card-w is measured & set by solitaire.js. */
-.sol-game { --sol-gap: 6px; --sol-card-w: 56px; max-width: 760px; margin: 14px auto; }
-.sol-board { background: #14163a; border-radius: 14px; padding: 10px; box-shadow: var(--shadow); }
+/* Retro Windows-Solitaire skin: green felt, blue diamond card backs, white cards.
+   Shared by all three card games. --sol-card-w is measured & set by solitaire.js. */
+.sol-game { --sol-gap: 7px; --sol-card-w: 56px; max-width: 760px; margin: 14px auto; }
+.sol-board {
+  /* green felt with a faint speckled texture */
+  background-color: #3a7d57;
+  background-image:
+    radial-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    radial-gradient(rgba(0,0,0,.06) 1px, transparent 1px);
+  background-size: 7px 7px, 11px 11px;
+  background-position: 0 0, 3px 4px;
+  border-radius: 10px; padding: 12px; box-shadow: var(--shadow), inset 0 0 60px rgba(0,0,0,.18);
+}
 .sol-board--scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.sol-toprow { display: flex; align-items: flex-start; gap: var(--sol-gap); margin-bottom: 16px; }
+.sol-toprow { display: flex; align-items: flex-start; gap: var(--sol-gap); margin-bottom: 18px; }
 .sol-group { display: flex; gap: var(--sol-gap); }
 .sol-spacer { flex: 1 1 auto; min-width: 8px; }
 .sol-tableau { display: grid; gap: var(--sol-gap); }
@@ -258,44 +268,71 @@ a { color: #a9b1ff; }
 /* A pile is a positioning context; cards are absolutely placed inside it. */
 .sol-pile { position: relative; width: var(--sol-card-w); }
 .sol-pile--tableau { width: auto; } /* width comes from the grid track */
+
+/* Empty slot — a faint green diamond placeholder, like the classic foundations */
 .sol-slot {
-  aspect-ratio: 5 / 7; border-radius: 7px;
-  background: rgba(255,255,255,.05); border: 1.5px dashed rgba(255,255,255,.16);
+  aspect-ratio: 5 / 7; border-radius: 5px;
+  background-color: rgba(0,0,0,.13);
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.07) 0 1px, transparent 1px 9px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.07) 0 1px, transparent 1px 9px);
+  border: 1px solid rgba(0,0,0,.22);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
   display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,.30); font-size: calc(var(--sol-card-w) * .42); line-height: 1;
+  color: rgba(255,255,255,.45); font-size: calc(var(--sol-card-w) * .4); line-height: 1;
 }
-.sol-pile.is-drop { outline: 2.5px solid var(--accent-2); outline-offset: 1px; border-radius: 8px; }
+.sol-pile.is-drop { outline: 3px solid #ffe14d; outline-offset: 1px; border-radius: 7px; }
 
 /* Cards */
 .sol-card {
   position: absolute; left: 0; top: 0; width: 100%; aspect-ratio: 5 / 7;
-  border-radius: 7px; background: #fdfdff; box-shadow: 0 1px 2px rgba(0,0,0,.45);
+  border-radius: 5px; background: #fff; border: 1px solid #b9b9b9;
+  box-shadow: 0 1px 1.5px rgba(0,0,0,.35);
   user-select: none; -webkit-user-select: none; touch-action: none;
   font-weight: 800; line-height: 1; overflow: hidden;
+  font-family: "Arial Narrow", Arial, sans-serif;
+  will-change: transform;
 }
-.sol-card.is-red { color: #d8334a; }
-.sol-card.is-black { color: #1b1d2b; }
+.sol-card.is-red { color: #d40000; }
+.sol-card.is-black { color: #101010; }
 .sol-card__corner {
-  position: absolute; top: 4%; left: 7%;
-  display: flex; flex-direction: column; align-items: center;
-  font-size: calc(var(--sol-card-w) * .32);
+  position: absolute; display: flex; flex-direction: column; align-items: center;
+  font-size: calc(var(--sol-card-w) * .34); letter-spacing: -.5px;
 }
-.sol-card__corner .s { font-size: calc(var(--sol-card-w) * .26); margin-top: -2px; }
+.sol-card__corner .s { font-size: calc(var(--sol-card-w) * .3); margin-top: -3px; }
+.sol-card__corner--tl { top: 5%; left: 7%; }
+.sol-card__corner--br { bottom: 5%; right: 7%; transform: rotate(180deg); }
 .sol-card__pip {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-size: calc(var(--sol-card-w) * .62); opacity: .9;
+  font-size: calc(var(--sol-card-w) * .66);
 }
-.sol-card--down { background: repeating-linear-gradient(45deg, #3a4080 0 6px, #2b2f6e 6px 12px); border: 1.5px solid #4a51a0; }
-.sol-card--down .sol-card__corner, .sol-card--down .sol-card__pip { display: none; }
-.sol-card.is-movable { cursor: grab; }
-.sol-card.is-sel { outline: 2.5px solid var(--accent); outline-offset: -1px; }
-.sol-card.is-dragging { cursor: grabbing; box-shadow: 0 10px 24px rgba(0,0,0,.5); z-index: 1000; }
-.sol-card.is-hint { animation: solpulse .6s ease 2; }
-@keyframes solpulse { 0%,100%{ box-shadow:0 1px 2px rgba(0,0,0,.45);} 50%{ box-shadow:0 0 0 3px var(--accent-2);} }
 
-/* Stock that recycles shows a ↻; empty foundation slots show suit hints via .sol-slot text. */
+/* Classic blue diamond back: white frame + blue diamond lattice */
+.sol-card--down { background: #fff; border: 1px solid #8f8f8f; }
+.sol-card--down::before {
+  content: ""; position: absolute; inset: 3px; border-radius: 2px;
+  background-color: #2358c6;
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.55) 0 1.5px, transparent 1.5px 8px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.55) 0 1.5px, transparent 1.5px 8px);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.5);
+}
+.sol-card--down .sol-card__corner, .sol-card--down .sol-card__pip { display: none; }
+
+.sol-card.is-movable { cursor: grab; }
+.sol-card.is-dragging { cursor: grabbing; box-shadow: 0 10px 24px rgba(0,0,0,.5); z-index: 1000; }
+.sol-card.sol-moving { z-index: 900; }
+.sol-card.is-hint { animation: solpulse .55s ease 2; }
+@keyframes solpulse { 0%,100%{ box-shadow:0 1px 1.5px rgba(0,0,0,.35);} 50%{ box-shadow:0 0 0 3px #ffe14d;} }
+
+/* Move animations */
+.sol-card.sol-deal { animation: soldeal .3s ease backwards; }
+@keyframes soldeal { from { opacity: 0; transform: translateY(-22px) scale(.94); } to { opacity: 1; transform: none; } }
+.sol-card.sol-flip { animation: solflip .22s ease-out; transform-origin: center; }
+@keyframes solflip { 0% { transform: scaleX(.08); } 55% { transform: scaleX(1.04); } 100% { transform: scaleX(1); } }
+
 .sol-stock { cursor: pointer; }
 
-.sol-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #c7ccff; margin: 4px 2px 12px; font-weight: 700; }
+.sol-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--ink-soft); margin: 4px 2px 12px; font-weight: 700; }
 .sol-bar .timer { color: var(--ink); }
 .sol-foundcount { font-variant-numeric: tabular-nums; }

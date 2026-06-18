@@ -65,9 +65,11 @@ window.Solitaire = (function () {
     }
     el.className = "sol-card " + (isRed(card.suit) ? "is-red" : "is-black");
     var s = SUITS[card.suit], r = RANKS[card.rank];
+    var corner = r + '<span class="s">' + s + "</span>";
     el.innerHTML =
-      '<div class="sol-card__corner">' + r + '<span class="s">' + s + "</span></div>" +
-      '<div class="sol-card__pip">' + s + "</div>";
+      '<div class="sol-card__corner sol-card__corner--tl">' + corner + "</div>" +
+      '<div class="sol-card__pip">' + s + "</div>" +
+      '<div class="sol-card__corner sol-card__corner--br">' + corner + "</div>";
   }
 
   // ── Engine ──
@@ -113,10 +115,30 @@ window.Solitaire = (function () {
       return el;
     }
 
-    // ---- render piles → cards ----
-    function render() {
+    // ---- render piles → cards (with smooth FLIP / deal / flip animations) ----
+    var prevFace = {}; // id -> faceUp, from the previous render, to detect cards turning over
+
+    function captureRects() {
+      var m = {};
+      board.querySelectorAll(".sol-card").forEach(function (el) { m[el.dataset.id] = el.getBoundingClientRect(); });
+      return m;
+    }
+    function flippedIds() {
+      var ids = {};
+      piles.forEach(function (p) { p.cards.forEach(function (c) { if (c.faceUp && prevFace[c.id] === false) ids[c.id] = true; }); });
+      return ids;
+    }
+    function rememberFaces() {
+      prevFace = {};
+      piles.forEach(function (p) { p.cards.forEach(function (c) { prevFace[c.id] = c.faceUp; }); });
+    }
+
+    function render(opts) {
+      opts = opts || {};
+      var oldRects = opts.flip ? captureRects() : null;
+      var flips = opts.flip ? flippedIds() : {};
+
       piles.forEach(function (p) {
-        // slot placeholder when empty
         var hasCards = p.cards.length > 0;
         var existingSlot = p.el.querySelector(":scope > .sol-slot");
         if (!hasCards) {
@@ -129,15 +151,49 @@ window.Solitaire = (function () {
         } else if (existingSlot) {
           existingSlot.remove();
         }
-        // reconcile cards: simplest correct approach — rebuild card nodes
         var frag = document.createDocumentFragment();
         p.cards.forEach(function (card) { frag.appendChild(makeCardEl(card)); });
-        // remove old card nodes
         p.el.querySelectorAll(":scope > .sol-card").forEach(function (n) { n.remove(); });
         p.el.appendChild(frag);
       });
+
       layout();
+
+      if (opts.deal) animateDeal();
+      else if (oldRects) playFlip(oldRects, flips);
+
+      rememberFaces();
       updateBar();
+    }
+
+    function animateDeal() {
+      var i = 0;
+      board.querySelectorAll(".sol-card").forEach(function (el) {
+        el.classList.add("sol-deal");
+        el.style.animationDelay = Math.min(i * 11, 520) + "ms";
+        i++;
+        el.addEventListener("animationend", function ae() { el.classList.remove("sol-deal"); el.style.animationDelay = ""; el.removeEventListener("animationend", ae); });
+      });
+    }
+
+    function playFlip(oldRects, flips) {
+      board.querySelectorAll(".sol-card").forEach(function (el) {
+        var id = el.dataset.id;
+        if (flips[id]) { el.classList.add("sol-flip"); el.addEventListener("animationend", function fe() { el.classList.remove("sol-flip"); el.removeEventListener("animationend", fe); }); return; }
+        var old = oldRects[id];
+        if (!old) return;
+        var nw = el.getBoundingClientRect();
+        var dx = old.left - nw.left, dy = old.top - nw.top;
+        if (!dx && !dy) return;
+        el.style.transition = "none";
+        el.style.transform = "translate(" + dx + "px," + dy + "px)";
+        el.classList.add("sol-moving");
+        requestAnimationFrame(function () { requestAnimationFrame(function () {
+          el.style.transition = "transform .24s ease";
+          el.style.transform = "";
+        }); });
+        el.addEventListener("transitionend", function te() { el.style.transition = ""; el.classList.remove("sol-moving"); el.removeEventListener("transitionend", te); });
+      });
     }
 
     // ---- compute card positions (fan offsets) ----
@@ -212,7 +268,7 @@ window.Solitaire = (function () {
       piles.forEach(function (p, i) { p.cards = snap.piles[i].slice(); });
       moves = snap.moves;
       if (cfg.restore) cfg.restore(api, snap.extra);
-      render();
+      render({ flip: true });
       setMessage("", "");
       if (els.btnUndo) els.btnUndo.disabled = undoStack.length === 0;
     }
@@ -231,7 +287,7 @@ window.Solitaire = (function () {
       fn();
       moves++;
       if (cfg.afterMove) cfg.afterMove(api);
-      render();
+      render({ flip: true });
       if (els.btnUndo) els.btnUndo.disabled = false;
       if (cfg.isWon(api)) win();
     }
@@ -298,15 +354,24 @@ window.Solitaire = (function () {
 
       var dest = pileUnder(e.clientX, e.clientY);
       if (dest && dest !== d.src && cfg.canDrop(d.group, dest, api)) {
-        cleanupDrag(d);
+        // commit first so the FLIP slide starts from where the cards were dropped
         commit(function () { moveStack(d.src, dest, d.group.length); });
+        cleanupDrag(d); // the dragged nodes are now detached; this just tidies their styles
       } else {
-        cleanupDrag(d); // snap back via re-layout
-        layout();
+        snapBack(d); // smooth return to the source pile
       }
     }
     function cleanupDrag(d) {
-      d.cardEls.forEach(function (el) { el.classList.remove("is-dragging"); el.style.pointerEvents = ""; el.style.zIndex = ""; el.style.transform = ""; });
+      d.cardEls.forEach(function (el) { el.classList.remove("is-dragging"); el.style.pointerEvents = ""; el.style.zIndex = ""; el.style.transition = ""; el.style.transform = ""; });
+    }
+    function snapBack(d) {
+      d.cardEls.forEach(function (el) {
+        el.style.transition = "transform .2s ease";
+        el.style.transform = "";
+        el.style.pointerEvents = "";
+        el.classList.remove("is-dragging");
+        el.addEventListener("transitionend", function te() { el.style.transition = ""; el.style.zIndex = ""; el.removeEventListener("transitionend", te); });
+      });
     }
 
     function pileUnder(x, y) {
@@ -336,7 +401,7 @@ window.Solitaire = (function () {
       ensureStarted();
       moves++;
       if (cfg.afterMove) cfg.afterMove(api);
-      render();
+      render({ flip: true });
       if (els.btnUndo) els.btnUndo.disabled = false;
       if (cfg.isWon(api)) win();
       return true;
@@ -360,9 +425,53 @@ window.Solitaire = (function () {
       renderStats();
       setMessage("🎉 Solved in " + formatTime(elapsed) + "!", "ok");
       lastElapsed = elapsed;
-      showWinModal(elapsed);
+      var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (reduce) showWinModal(elapsed);
+      else winCascade(function () { showWinModal(elapsed); });
     }
     var lastElapsed = 0;
+
+    // The classic Solitaire "bouncing cards" celebration — foundation cards fall,
+    // bounce off the bottom and leave a trail across the screen.
+    function winCascade(done) {
+      var tops = [];
+      api.pilesByZone("foundations").forEach(function (p) {
+        var cels = p.el.querySelectorAll(":scope > .sol-card");
+        if (cels.length) tops.push(cels[cels.length - 1]);
+      });
+      if (!tops.length) { done(); return; }
+      var layer = document.createElement("div");
+      layer.style.cssText = "position:fixed;inset:0;z-index:1500;pointer-events:none;overflow:hidden;";
+      document.body.appendChild(layer);
+      var W = window.innerWidth, H = window.innerHeight;
+      var balls = tops.map(function (el, i) {
+        var r = el.getBoundingClientRect();
+        return { html: el.outerHTML, w: r.width, h: r.height, x: r.left, y: r.top,
+          vx: (i % 2 ? 1 : -1) * (2.2 + Math.random() * 3.2), vy: -(2 + Math.random() * 4) };
+      });
+      var GRAV = 0.5, BOUNCE = 0.8, frames = 0, MAX = 200, finished = false;
+      function finish() { if (finished) return; finished = true; layer.remove(); done(); }
+      function step() {
+        frames++;
+        var anyVisible = false;
+        for (var i = 0; i < balls.length; i++) {
+          var b = balls[i];
+          b.vy += GRAV; b.x += b.vx; b.y += b.vy;
+          if (b.y + b.h > H) { b.y = H - b.h; b.vy = -Math.abs(b.vy) * BOUNCE; }
+          if (b.x > -b.w && b.x < W) anyVisible = true;
+          var holder = document.createElement("div");
+          holder.innerHTML = b.html;
+          var card = holder.firstChild;
+          card.style.position = "absolute"; card.style.margin = "0";
+          card.style.left = b.x + "px"; card.style.top = b.y + "px";
+          card.style.width = b.w + "px"; card.style.height = b.h + "px";
+          layer.appendChild(card);
+        }
+        if (frames < MAX && anyVisible) requestAnimationFrame(step);
+        else finish();
+      }
+      requestAnimationFrame(step);
+    }
     function showWinModal(elapsed) {
       var modal = document.getElementById("win-modal"); if (!modal) return;
       var sub = document.getElementById("win-sub");
@@ -406,7 +515,8 @@ window.Solitaire = (function () {
       var deck = shuffle(cfg.makeDeck(diff), rng);
       cfg.deal(api, deck);
       if (cfg.afterMove) cfg.afterMove(api, true);
-      render();
+      prevFace = {};
+      render({ deal: true });
       setMessage("", "");
       if (els.timer) els.timer.textContent = "0:00";
       renderStats();
