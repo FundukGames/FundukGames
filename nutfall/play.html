@@ -19,7 +19,8 @@
       font-family: "Baloo 2", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
       background: radial-gradient(120% 100% at 50% 0%, var(--bg2), var(--bg1)); }
 
-    #app { display: grid; grid-template-rows: auto 1fr auto; height: 100dvh; gap: 10px; padding: 10px; }
+    #app { display: grid; grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr);
+      height: 100dvh; gap: 10px; padding: 10px; overflow: hidden; }
 
     /* Top bar */
     #topbar { display: flex; align-items: center; gap: 12px; font-variant-numeric: tabular-nums; }
@@ -148,7 +149,10 @@
       100% { opacity: 0; transform: translate(-50%,-150%) scale(1); } }
 
     @media (max-width: 880px) {
-      #board { grid-template-columns: 1fr; }
+      #board { grid-template-columns: minmax(0, 1fr); }
+      #topbar { flex-wrap: wrap; row-gap: 6px; }
+      .stagename { flex: 1 1 100%; order: 5; }  /* stage name drops to its own line */
+      .stat { display: none; }                   /* hide the nuts/fps debug readout on phones */
       .rail { position: fixed; left: 10px; right: 10px; bottom: 76px; max-height: 56vh; z-index: 30;
         transform: translateY(140%); transition: transform .26s cubic-bezier(.2,.8,.2,1); }
       body.drawer-left #left { transform: none; }
