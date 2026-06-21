@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <title>Nutfall — sealed arena (prototype)</title>
+  <meta name="robots" content="noindex" />
+  <meta name="theme-color" content="#6c4cff" />
+  <style>
+    :root {
+      --purple: #6c4cff; --purple-d: #5a3de0; --pink: #ff5ca8;
+      --gold: #ffce3a; --green: #19c37d; --ink: #2a2150; --ink-soft: #6b6390;
+      --panel: #ffffff; --bg1: #b9a9ff; --bg2: #e9e2ff;
+      --shadow: 0 6px 18px rgba(60,40,120,.18); --radius: 16px;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; height: 100%; overflow: hidden; color: var(--ink);
+      font-family: "Baloo 2", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: radial-gradient(120% 100% at 50% 0%, var(--bg2), var(--bg1)); }
+
+    #app { display: grid; grid-template-rows: auto 1fr auto; height: 100dvh; gap: 10px; padding: 10px; }
+
+    /* Top bar */
+    #topbar { display: flex; align-items: center; gap: 12px; font-variant-numeric: tabular-nums; }
+    .balance { display: inline-flex; align-items: center; gap: 8px; font-weight: 800; font-size: 1.35rem;
+      color: var(--ink); background: linear-gradient(180deg, #fff, #fff5d6); border: 2px solid #ffe08a;
+      padding: 6px 16px 6px 12px; border-radius: 999px; box-shadow: var(--shadow); }
+    .balance .ico { font-size: 1.2rem; }
+    #score { display: inline-block; min-width: 5ch; text-align: right; font-variant-numeric: tabular-nums; }
+    #hint { font-weight: 700; color: var(--purple-d); background: #ffffffcc; padding: 5px 12px;
+      border-radius: 999px; font-size: .82rem; min-height: 0; }
+    #hint:empty { display: none; }
+    .levelchip { font-weight: 800; background: #fff; color: var(--purple-d); padding: 6px 13px;
+      border-radius: 999px; box-shadow: var(--shadow); font-size: .95rem; white-space: nowrap; }
+    .stagename { font-weight: 800; color: #fff; text-shadow: 0 1px 2px #0006; font-size: .9rem; white-space: nowrap; }
+    .fieldchip { font-weight: 800; background: #ffffffcc; color: var(--purple-d); padding: 5px 11px;
+      border-radius: 999px; font-size: .82rem; white-space: nowrap; }
+    .nextbtn { pointer-events: auto; border: 0; border-radius: 999px; padding: 7px 16px; font-weight: 800;
+      font-size: .85rem; cursor: pointer; white-space: nowrap; color: #fff; box-shadow: 0 3px 0 rgba(0,0,0,.18);
+      background: linear-gradient(180deg, #2fe39a, var(--green)); transition: transform .08s; }
+    .nextbtn:active { transform: translateY(2px); }
+    .nextbtn:disabled { background: #c9c2e6; color: #fff; box-shadow: none; cursor: default; }
+    .lvlbar { flex: 0 1 150px; height: 12px; background: #ffffff55; border-radius: 999px; overflow: hidden;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,.25); }
+    .lvlbar i { display: block; height: 100%; width: 0%; border-radius: 999px;
+      background: linear-gradient(90deg, var(--gold), var(--pink)); transition: width .4s ease; }
+    #toast { position: fixed; top: 60px; left: 50%; transform: translateX(-50%) translateY(-10px);
+      background: var(--ink); color: #fff; font-weight: 800; padding: 12px 22px; border-radius: 14px;
+      box-shadow: var(--shadow); opacity: 0; pointer-events: none; z-index: 50; }
+    #toast.show { animation: toast 2.8s ease forwards; }
+    @keyframes toast { 0% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+      8% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      82% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
+    .mtype.locked { opacity: .5; cursor: default; }
+
+    /* First-time onboarding coachmark */
+    #tip { position: fixed; top: 104px; left: 50%; transform: translateX(-50%) translateY(-6px);
+      background: #fffbe6; color: var(--ink); font-weight: 700; font-size: .92rem; padding: 10px 18px;
+      border-radius: 14px; box-shadow: var(--shadow); border: 2px solid #ffe08a; opacity: 0; pointer-events: none;
+      z-index: 45; transition: opacity .25s, transform .25s; max-width: 80vw; text-align: center; }
+    #tip.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #tip b { color: var(--purple-d); }
+
+    .stat { margin-left: auto; font-size: .78rem; font-weight: 700; color: var(--ink-soft); background: #ffffffaa;
+      padding: 5px 10px; border-radius: 999px; }
+
+    /* Board: rails + arena */
+    #board { display: grid; grid-template-columns: 232px 1fr 232px; gap: 10px; min-height: 0; }
+    .rail { background: var(--panel); border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 12px; overflow: auto; }
+    .rail h3 { margin: 0 0 10px; font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-soft); }
+    #arena { position: relative; border-radius: 22px; overflow: hidden; min-height: 0;
+      box-shadow: inset 0 0 0 5px #ffffff22, var(--shadow); }
+    #arena canvas { display: block; touch-action: none; }
+    #popups { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    #lanebtns { position: absolute; inset: 0; pointer-events: none; }
+    #lanebtns .lanebtn { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; border: 0;
+      border-radius: 8px; background: linear-gradient(180deg, #ffd964, #f5a623); color: #4a2e00; font-weight: 800;
+      font-size: .72rem; padding: 5px 8px; cursor: pointer; box-shadow: 0 2px 0 rgba(0,0,0,.25); white-space: nowrap; }
+    #lanebtns .lanebtn:disabled { background: #b9a85e; color: #6b5a2a; box-shadow: none; cursor: default; opacity: .7; }
+
+    /* Bottom bar: inventory + controls */
+    #bottombar { display: flex; align-items: center; gap: 10px; }
+    #inventory { display: flex; gap: 6px; overflow-x: auto; padding: 8px; background: var(--panel);
+      border-radius: var(--radius); box-shadow: var(--shadow); flex: 1; min-height: 56px; }
+    #inventory .slot { flex: 0 0 auto; width: 40px; height: 40px; border: 2px dashed #cfc6f0; border-radius: 10px;
+      background: #f3f0ff; color: var(--ink); font-weight: 800; font-size: .72rem; cursor: pointer; transition: transform .1s; }
+    #inventory .slot.filled { border: none; box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+    #inventory .slot.sel { outline: 3px solid var(--purple); outline-offset: 1px; transform: translateY(-3px); }
+    #inventory .empty { color: var(--ink-soft); font-size: .8rem; padding: 8px 4px; font-weight: 700; }
+
+    #controls { display: flex; gap: 8px; }
+    .btn { border: 0; border-radius: 14px; padding: 13px 20px; font-weight: 800; font-size: 1rem; cursor: pointer;
+      color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,.18); transition: transform .08s, box-shadow .08s; }
+    .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.18); }
+    .btn-fire { background: linear-gradient(180deg, #8a6cff, var(--purple)); }
+    .btn-flow { background: linear-gradient(180deg, #9aa0b8, #6b7088); }
+    .btn-flow.on { background: linear-gradient(180deg, #2fe39a, var(--green)); }
+
+    /* Tabs (mobile only) */
+    #tabs { display: none; gap: 8px; }
+    #tabs button { flex: 1; border: 0; border-radius: 12px; padding: 11px 0; font-weight: 800; cursor: pointer;
+      background: #ffffffcc; color: var(--ink); box-shadow: var(--shadow); }
+    #tabs button.on { background: var(--purple); color: #fff; }
+
+    /* Upgrade rows */
+    .up-row { display: flex; align-items: center; gap: 8px; padding: 9px; border-radius: 12px; margin-bottom: 8px;
+      background: #f5f2ff; }
+    .up-row .info { flex: 1; min-width: 0; }
+    .up-row .info b { font-size: .86rem; }
+    .up-row .info span { display: block; font-size: .7rem; color: var(--ink-soft); }
+    .up-row .info .now { color: var(--purple-d); font-weight: 800; }
+    .up-row .buy { border: 0; border-radius: 10px; background: linear-gradient(180deg,#8a6cff,var(--purple)); color: #fff;
+      font-weight: 800; font-size: .76rem; padding: 9px 11px; cursor: pointer; white-space: nowrap; box-shadow: 0 3px 0 rgba(0,0,0,.15); }
+    .up-row .buy:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.15); }
+    .up-row .buy:disabled { background: #d9d3f0; color: #fff; box-shadow: none; cursor: default; }
+
+    /* Merchant */
+    #mod-types { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+    #mod-types .mtype { flex: 1 1 30%; border: 0; border-radius: 11px; color: #2a2150; font-weight: 800; padding: 9px 0;
+      cursor: pointer; font-size: .82rem; opacity: .55; box-shadow: 0 3px 0 rgba(0,0,0,.12); transition: opacity .1s, transform .08s; }
+    #mod-types .mtype.sel { opacity: 1; transform: translateY(-2px); outline: 3px solid #ffffff; }
+    #buy-box.fixed .bb-qty { display: none; }
+    #buy-box { padding: 12px; background: #f5f2ff; border-radius: 14px; }
+    .bb-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .bb-head .chip { border: 0; border-radius: 999px; font-weight: 800; padding: 7px 16px; color: #2a2150; font-size: 1.15rem;
+      box-shadow: 0 3px 0 rgba(0,0,0,.14); }
+    .bb-head span { font-size: .76rem; color: var(--ink-soft); font-weight: 700; }
+    .bb-qty { display: flex; align-items: center; gap: 9px; }
+    .bb-qty button { width: 34px; height: 34px; border: 0; border-radius: 10px; background: var(--purple); color: #fff;
+      font-weight: 900; font-size: 1.2rem; cursor: pointer; box-shadow: 0 3px 0 rgba(0,0,0,.15); }
+    .bb-qty button:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.15); }
+    .bb-qty input[type=range] { flex: 1; min-width: 0; accent-color: var(--purple); }
+    .bb-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
+    .bb-foot #bb-qtyl { font-weight: 800; font-size: 1.05rem; }
+    .bb-foot .buy { border: 0; border-radius: 12px; background: linear-gradient(180deg,#ffd964,#f5a623); color: #4a2e00;
+      font-weight: 900; font-size: .9rem; padding: 11px 16px; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,.18); }
+    .bb-foot .buy:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.18); }
+    .bb-foot .buy:disabled { background: #ddd6f0; color: #fff; box-shadow: none; cursor: default; }
+
+    /* Floating score / crack popups */
+    .pop { position: absolute; transform: translate(-50%,-50%); font-weight: 900; font-size: 1.2rem;
+      text-shadow: 0 2px 4px rgba(0,0,0,.45); animation: pop 1s ease-out forwards; }
+    .pop.gain { color: #b6ffdf; } .pop.crack { color: #ffc1c1; font-size: 1rem; }
+    @keyframes pop { 0% { opacity: 0; transform: translate(-50%,-40%) scale(.6); }
+      18% { opacity: 1; transform: translate(-50%,-60%) scale(1.1); }
+      100% { opacity: 0; transform: translate(-50%,-150%) scale(1); } }
+
+    @media (max-width: 880px) {
+      #board { grid-template-columns: 1fr; }
+      .rail { position: fixed; left: 10px; right: 10px; bottom: 76px; max-height: 56vh; z-index: 30;
+        transform: translateY(140%); transition: transform .26s cubic-bezier(.2,.8,.2,1); }
+      body.drawer-left #left { transform: none; }
+      body.drawer-right #right { transform: none; }
+      #tabs { display: flex; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <header id="topbar">
+      <span class="balance"><span class="ico">🌰</span><span id="score">0</span></span>
+      <span class="levelchip">Stage <b id="lvl">1</b></span>
+      <span class="stagename" id="stagename"></span>
+      <span class="fieldchip">🔢 <b id="fieldcount">0/4</b></span>
+      <div class="lvlbar"><i id="lvlfill"></i></div>
+      <button id="nextbtn" class="nextbtn"></button>
+      <span id="hint"></span>
+      <span class="stat">nuts <span id="nuts">0</span> · <span id="fps">0</span>fps</span>
+    </header>
+    <div id="toast"></div>
+    <div id="tip"></div>
+
+    <div id="board">
+      <aside id="left" class="rail"><h3>Upgrades</h3><div id="up-list"></div></aside>
+      <section id="arena"><div id="popups"></div><div id="lanebtns"></div></section>
+      <aside id="right" class="rail"><h3>Merchant</h3><div id="mod-types"></div><div id="buy-box"></div></aside>
+    </div>
+
+    <nav id="tabs">
+      <button data-drawer="left">⚙ Upgrades</button>
+      <button data-drawer="">▶ Play</button>
+      <button data-drawer="right">🛒 Shop</button>
+    </nav>
+
+    <footer id="bottombar">
+      <div id="inventory"></div>
+    </footer>
+  </div>
+
+  <script>
+    // Mobile drawer tabs (DOM-only; safe before the game module loads).
+    document.querySelectorAll("#tabs button").forEach((b) => {
+      b.addEventListener("click", () => {
+        const d = b.dataset.drawer;
+        document.body.classList.toggle("drawer-left", d === "left");
+        document.body.classList.toggle("drawer-right", d === "right");
+        document.querySelectorAll("#tabs button").forEach((x) => x.classList.toggle("on", x === b));
+      });
+    });
+  </script>
+  <script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"
+  } }
+  </script>
+  <script type="module" src="js/game.js"></script>
+</body>
+</html>
