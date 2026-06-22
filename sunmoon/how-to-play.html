@@ -55,6 +55,35 @@
         <li><strong>Use the clues.</strong> An <strong>✕</strong> forces opposites, an <strong>=</strong> forces a matching pair — chain these with the no-triple rule for quick wins.</li>
       </ol>
 
+      <h2>A worked example</h2>
+      <p>Say a row on a 6-wide board starts ☀️ ☀️ and the rest is blank (three suns, three moons per
+      row). The two suns force the third cell to be 🌙 — three suns in a row is illegal. That moon plus
+      the balance rule then constrains the rest: you still need one sun and two moons across the last
+      three cells, and the no-three rule blocks any run from forming. Chaining "no triples" with
+      "balance" like this resolves most of a board before you even use the = / ✕ clues.</p>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><strong>Ignoring balance until the end.</strong> The equal-count rule applies from move
+        one — as soon as a line has all its suns (or moons) placed, every remaining cell is forced.</li>
+        <li><strong>Misreading clues.</strong> <strong>=</strong> means the two cells match;
+        <strong>✕</strong> means they differ. Swapping them cascades into contradictions.</li>
+        <li><strong>Filling fast and making a triple.</strong> Three identical symbols in a line is
+        always illegal — check both directions before you commit a cell.</li>
+      </ul>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq"><dl>
+        <dt>What kind of puzzle is SunMoon?</dt>
+        <dd>It's a Tango-style binary logic puzzle — the "two-symbol" grid family, with
+        no-three-in-a-row, balanced lines, and equals/opposite clues.</dd>
+        <dt>Do I ever need to guess?</dt>
+        <dd>No — every board is generated to be solvable by logic alone, and rule-breaking cells are
+        outlined in red so you can backtrack.</dd>
+        <dt>Is there a daily puzzle?</dt>
+        <dd>Yes, plus unlimited random boards — free and with no login.</dd>
+      </dl></div>
+
       <p style="margin-top:20px;"><a class="cta" href="play.html">▶ Try it now</a></p>
     </article>
 

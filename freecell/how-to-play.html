@@ -64,6 +64,36 @@
         <li><strong>Don't bury what you need.</strong> Since you can see every card, look ahead before dropping a card on top of one you'll want soon.</li>
       </ol>
 
+      <h2>Moving more than one card</h2>
+      <p>FreeCell technically moves one card at a time, but the game lets you drag a whole run when you
+      have the space to shuffle it through free cells and empty columns behind the scenes. The number
+      of cards you can move at once is <strong>(1 + free cells) × 2<sup>(empty columns)</sup></strong>
+      — and moving <em>onto</em> an empty column counts one fewer empty column as a helper. So if a
+      multi-card move is refused, it isn't a bug: you simply don't have enough free space yet. Empty a
+      free cell or a column and the limit jumps (each empty column <em>doubles</em> it).</p>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><strong>Parking cards in every free cell.</strong> Each filled cell halves your moving
+        power — keep them empty until you genuinely need the parking.</li>
+        <li><strong>Expecting big stacks to move with no space.</strong> See the formula above; count
+        your free cells and empty columns before attempting a long run.</li>
+        <li><strong>Burying a needed low card.</strong> Every card is visible, so look ahead — don't
+        drop a card on top of an Ace or two you'll want next.</li>
+      </ul>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq"><dl>
+        <dt>Is FreeCell always winnable?</dt>
+        <dd>Almost — the vast majority of deals are solvable, which is why FreeCell is famous as the
+        "skill" Solitaire. Use <strong>Undo</strong> to test lines.</dd>
+        <dt>Why won't my stack move?</dt>
+        <dd>You don't have enough free cells/empty columns for that many cards at once. Free up space
+        and try again — see "Moving more than one card" above.</dd>
+        <dt>Is it free and unlimited?</dt>
+        <dd>Yes — free, no login, unlimited deals plus a Daily Challenge.</dd>
+      </dl></div>
+
       <p style="margin-top:20px;"><a class="cta" href="play.html">▶ Try it now</a></p>
     </article>
 
