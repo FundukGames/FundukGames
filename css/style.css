@@ -340,3 +340,5 @@ a { color: #a9b1ff; }
 .sol-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: var(--ink-soft); margin: 4px 2px 12px; font-weight: 700; }
 .sol-bar .timer { color: var(--ink); }
 .sol-foundcount { font-variant-numeric: tabular-nums; }
+
+.game-tile__icon img { width: 48px; height: 48px; display: block; }
