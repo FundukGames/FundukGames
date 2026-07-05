@@ -855,9 +855,70 @@ function tryAdvance() {
   resetRun();
   toast("⬆ Level " + (stage + 1) + " — " + s.name + " · fresh start!");
   refreshShops(); updateStageUI();
+  saveGame(); // a level-up must never be lost
 }
 const nextBtn = document.getElementById("nextbtn");
 if (nextBtn) nextBtn.addEventListener("click", tryAdvance);
+
+// ---- Save / load: full progress persists in localStorage -------------------
+// Saves both the persistent unlocks AND the current run (board, coins, upgrades),
+// so a reload in the same browser continues exactly where you left off.
+const SAVE_KEY = "nf_save_v1";
+function mkItem(type, value) {
+  const t = TYPES[type];
+  return { type: type, value: value, label: t.fixed ? t.label() : t.label(value), color: t.color };
+}
+function saveGame() {
+  try {
+    const upLevels = {};
+    UPGRADES.forEach((u) => (upLevels[u.id] = u.level));
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      v: 1,
+      stage: stage, lifetime: lifetime, unlockedMul: unlockedMul,
+      upgUnlocked: upgUnlocked, modUnlocked: modUnlocked,
+      baseCapacity: baseCapacity, GOAL_MULT: GOAL_MULT,
+      score: score, CAPACITY: CAPACITY, baseValue: baseValue,
+      flowInterval: flowInterval, maxOnField: maxOnField,
+      upLevels: upLevels,
+      lanes: LANES.map((ln) => ({ mult: ln.mult, lvl: ln.lvl })),
+      bumpers: bumpers.map((b) => ({ type: b.type, value: b.value, x: b.x, y: b.y })),
+      inventory: inventory.map((it) => (it ? { type: it.type, value: it.value } : null)),
+    }));
+  } catch (e) {}
+}
+function loadGame() {
+  let s = null;
+  try { s = JSON.parse(localStorage.getItem(SAVE_KEY) || "null"); } catch (e) {}
+  if (!s || s.v !== 1) return false;
+  try {
+    stage = Math.max(0, Math.min(STAGES_MAX, s.stage | 0));
+    lifetime = s.lifetime || 0; unlockedMul = !!s.unlockedMul;
+    Object.assign(upgUnlocked, s.upgUnlocked || {});
+    Object.assign(modUnlocked, s.modUnlocked || {});
+    baseCapacity = s.baseCapacity || baseCapacity;
+    GOAL_MULT = s.GOAL_MULT || 1;
+    UPGRADES.forEach((u) => (u.level = (s.upLevels && s.upLevels[u.id]) || 0));
+    buildLanes(STAGES[stage].lanes);
+    (s.lanes || []).forEach((d, i) => {
+      const ln = LANES[i]; if (!ln || !d) return;
+      ln.mult = d.mult; ln.lvl = d.lvl || 0; ln.color = laneColor(ln.mult);
+      ln.rim.material.color.set(ln.color);
+      laneGroup.remove(ln.tag); ln.tag.material.map.dispose(); ln.tag.material.dispose();
+      ln.tag = laneTag(ln); laneGroup.add(ln.tag);
+    });
+    score = s.score || 0; displayScore = score;
+    CAPACITY = s.CAPACITY || CAPACITY; baseValue = s.baseValue || 1;
+    flowInterval = s.flowInterval || 1.0; maxOnField = s.maxOnField || 1;
+    (s.bumpers || []).forEach((b) => { if (TYPES[b.type]) placeBumperFree(b.x, b.y, mkItem(b.type, b.value)); });
+    (s.inventory || []).forEach((it, i) => { if (it && TYPES[it.type] && i < INV_SLOTS) inventory[i] = mkItem(it.type, it.value); });
+    return true;
+  } catch (e) { try { localStorage.removeItem(SAVE_KEY); } catch (e2) {} return false; }
+}
+loadGame();
+setInterval(saveGame, 3000);                                   // steady autosave
+window.addEventListener("beforeunload", saveGame);             // ...and on the way out
+window.addEventListener("pagehide", saveGame);                 // mobile Safari
+document.addEventListener("visibilitychange", () => { if (document.hidden) saveGame(); });
 
 refreshShops();
 updateInventory();
