@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8a6cff"/>
+      <stop offset="1" stop-color="#5a3de0"/>
+    </linearGradient>
+    <linearGradient id="nut" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd964"/>
+      <stop offset="1" stop-color="#f09c1a"/>
+    </linearGradient>
+    <linearGradient id="cap" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9c6430"/>
+      <stop offset="1" stop-color="#77451c"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <!-- nut body: bold rounded teardrop -->
+  <path d="M32 18 C44 18 51 27 51 38 C51 50 42 57 32 57 C22 57 13 50 13 38 C13 27 20 18 32 18 Z" fill="url(#nut)"/>
+  <!-- cap: warm brown beret -->
+  <path d="M12.5 34 C14 21 23 14.5 32 14.5 C41 14.5 50 21 51.5 34 C45 29 38.5 27 32 27 C25.5 27 19 29 12.5 34 Z" fill="url(#cap)"/>
+  <!-- stem -->
+  <path d="M29 9 C29 7.5 30.2 6.5 32 6.5 C33.8 6.5 35 7.5 35 9 L35 16 L29 16 Z" fill="#77451c"/>
+  <!-- highlight -->
+  <circle cx="23.5" cy="39" r="4.2" fill="#ffffff" opacity=".4"/>
+</svg>
