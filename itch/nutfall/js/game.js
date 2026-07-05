@@ -924,6 +924,43 @@ refreshShops();
 updateInventory();
 updateStageUI();
 
+// ---- Sound: bounce SFX (WebAudio — cheap overlapping one-shots) -------------
+let audioCtx = null, bounceBuf = null, sndOn = true, lastSndAt = 0;
+try { sndOn = localStorage.getItem("nf_snd") !== "0"; } catch (e) {}
+function initAudio() {
+  if (audioCtx) { if (audioCtx.state === "suspended") audioCtx.resume(); return; }
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    fetch("audio/bounce.mp3")
+      .then((r) => r.arrayBuffer())
+      .then((b) => audioCtx.decodeAudioData(b))
+      .then((buf) => (bounceBuf = buf))
+      .catch(() => {});
+  } catch (e) {}
+}
+window.addEventListener("pointerdown", initAudio); // browsers unlock audio on a gesture
+function playBounce(strength) {
+  if (!sndOn || !bounceBuf) return;
+  const now = performance.now();
+  if (now - lastSndAt < 65) return;                // rate-limit the machine gun
+  lastSndAt = now;
+  const src = audioCtx.createBufferSource();
+  src.buffer = bounceBuf;
+  src.playbackRate.value = 0.85 + Math.random() * 0.4;  // organic pitch variety
+  const g = audioCtx.createGain();
+  g.gain.value = Math.min(0.6, 0.15 + strength * 0.45);
+  src.connect(g); g.connect(audioCtx.destination);
+  src.start();
+}
+const sndBtn = document.getElementById("sndbtn");
+function updateSndBtn() { if (sndBtn) sndBtn.textContent = sndOn ? "🔊" : "🔇"; }
+if (sndBtn) sndBtn.addEventListener("click", () => {
+  sndOn = !sndOn;
+  try { localStorage.setItem("nf_snd", sndOn ? "1" : "0"); } catch (e) {}
+  updateSndBtn();
+});
+updateSndBtn();
+
 // ---- Physics + render loop -------------------------------------------------
 function bounceObstacle(n, ob, radius, restitution) {
   const dx = n.x - ob.x, dy = n.y - ob.y, rr = NUT_R + radius;
@@ -981,14 +1018,15 @@ function frame(now) {
         else if (b.type === "mul") n.value = Math.round(n.value * b.value * 10) / 10;
         else if (b.type === "split") trySplit(n);
         else if (b.type === "bump") { const sp = Math.hypot(n.vx, n.vy) || 1, k = Math.min(VMAX, sp * 1.5) / sp; n.vx *= k; n.vy *= k; } // speed boost
+        playBounce(Math.hypot(n.vx, n.vy) / VMAX);
         n.cool = 0.15;
       }
     }
     // Hard speed cap — keeps fast nuts from tunnelling through walls / flying off.
     const sp = Math.hypot(n.vx, n.vy); if (sp > VMAX) { const k = VMAX / sp; n.vx *= k; n.vy *= k; }
     // Side walls + a ceiling so a boosted nut can't escape upward.
-    if (n.x < -HW + NUT_R) { n.x = -HW + NUT_R; n.vx = Math.abs(n.vx) * WALL_BOUNCE; }
-    else if (n.x > HW - NUT_R) { n.x = HW - NUT_R; n.vx = -Math.abs(n.vx) * WALL_BOUNCE; }
+    if (n.x < -HW + NUT_R) { n.x = -HW + NUT_R; if (Math.abs(n.vx) > 3) playBounce(Math.abs(n.vx) / VMAX * 0.6); n.vx = Math.abs(n.vx) * WALL_BOUNCE; }
+    else if (n.x > HW - NUT_R) { n.x = HW - NUT_R; if (Math.abs(n.vx) > 3) playBounce(Math.abs(n.vx) / VMAX * 0.6); n.vx = -Math.abs(n.vx) * WALL_BOUNCE; }
     if (n.y > SPAWN_Y + 0.5) { n.y = SPAWN_Y + 0.5; n.vy = -Math.abs(n.vy) * WALL_BOUNCE; }
     // Bottom receiver -> bank value × lane multiplier × payout.
     if (n.y < DRAIN_Y) {

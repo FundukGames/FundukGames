@@ -153,6 +153,7 @@
       #topbar { flex-wrap: wrap; row-gap: 6px; }
       .stagename { flex: 1 1 100%; order: 5; }  /* stage name drops to its own line */
       .stat { display: none; }                   /* hide the nuts/fps debug readout on phones */
+      #sndbtn { display: inline-block; }         /* ...but keep the sound toggle */
       #tabs { display: flex; position: relative; z-index: 40; } /* always tappable above the drawer */
       #drawer-backdrop { position: fixed; inset: 0; background: rgba(28,18,56,.42); z-index: 25;
         opacity: 0; pointer-events: none; transition: opacity .22s; }
@@ -175,6 +176,7 @@
       <button id="nextbtn" class="nextbtn"></button>
       <span id="hint"></span>
       <span class="stat">nuts <span id="nuts">0</span> · <span id="fps">0</span>fps</span>
+      <button id="sndbtn" class="stat" style="border:0;cursor:pointer;font-size:.95rem;" title="Sound on/off">🔊</button>
       <a class="stat" style="text-decoration:none" href="https://fundukgames.com/" target="_blank" rel="noopener">More games ↗</a>
     </header>
     <div id="toast"></div>
