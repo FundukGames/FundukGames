@@ -119,16 +119,79 @@ function barkTexture() {
   for (let i = 0; i < 8; i++) { const x = Math.random() * 128; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + (Math.random() - 0.5) * 12, 512); ctx.stroke(); }
   const tex = new THREE.CanvasTexture(cv); tex.anisotropy = 4; return tex;
 }
-// Back panel — warm woody gradient.
+// Back panel — walnut plank: wavy vertical grain that flows around a few
+// knots, broad tonal blotches, fine pores and a soft sheen band.
 function boardTexture() {
-  const cv = document.createElement("canvas"); cv.width = 256; cv.height = 512;
+  const W = 512, H = 1024;
+  const cv = document.createElement("canvas"); cv.width = W; cv.height = H;
   const ctx = cv.getContext("2d");
-  const g = ctx.createLinearGradient(0, 0, 0, 512);
-  g.addColorStop(0, "#3a2c1a"); g.addColorStop(1, "#16100a");
-  ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 512);
-  ctx.strokeStyle = "rgba(255,220,170,0.04)"; ctx.lineWidth = 2;
-  for (let y = 40; y < 512; y += 46) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(256, y); ctx.stroke(); }
-  const tex = new THREE.CanvasTexture(cv); tex.anisotropy = 4; return tex;
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, "#4d3115"); g.addColorStop(0.45, "#5f3f20"); g.addColorStop(1, "#3a2510");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  for (let i = 0; i < 16; i++) { // broad light/dark patches of the plank
+    const x = Math.random() * W, y = Math.random() * H, r = 90 + Math.random() * 190;
+    const rg = ctx.createRadialGradient(x, y, 0, x, y, r);
+    rg.addColorStop(0, Math.random() < 0.45 ? "rgba(184,132,76,0.13)" : "rgba(22,12,5,0.30)");
+    rg.addColorStop(1, "rgba(0,0,0,0)");
+    ctx.fillStyle = rg; ctx.fillRect(x - r, y - r, 2 * r, 2 * r);
+  }
+  // Grain bends around these knots (vertically squashed so the flow is elongated).
+  const knots = [
+    { x: W * 0.66, y: H * 0.26, r: 26 }, { x: W * 0.28, y: H * 0.58, r: 21 }, { x: W * 0.55, y: H * 0.86, r: 15 }];
+  const warp = (x, y) => {
+    let dx = 0;
+    for (const k of knots) {
+      const ex = x - k.x, ey = (y - k.y) * 0.5;
+      dx += (ex >= 0 ? 1 : -1) * (k.r * k.r * 16) / (ex * ex + ey * ey + k.r * k.r);
+    }
+    return dx;
+  };
+  for (let i = 0; i < 95; i++) { // wavy vertical grain lines
+    const bx = (i / 95) * (W * 1.12) - W * 0.06 + Math.random() * 5;
+    const amp = 3 + Math.random() * 9, freq = 0.004 + Math.random() * 0.006, ph = Math.random() * Math.PI * 2;
+    const tone = Math.random();
+    ctx.strokeStyle = tone < 0.3 ? "rgba(18,10,4," + (0.4 + Math.random() * 0.32).toFixed(2) + ")"
+      : tone < 0.58 ? "rgba(42,25,10," + (0.26 + Math.random() * 0.24).toFixed(2) + ")"
+      : "rgba(196,146,90," + (0.11 + Math.random() * 0.12).toFixed(2) + ")";
+    ctx.lineWidth = tone < 0.3 ? 1.4 + Math.random() * 2.6 : 0.6 + Math.random() * 1.1;
+    ctx.beginPath();
+    for (let y = -8; y <= H + 8; y += 7) {
+      const x = bx + Math.sin(y * freq + ph) * amp + Math.sin(y * freq * 3.7 + ph * 2) * amp * 0.3 + warp(bx, y);
+      if (y <= -8) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  }
+  for (const k of knots) { // knot cores: dark heart + concentric rings
+    ctx.save(); ctx.translate(k.x, k.y); ctx.scale(1, 1.9);
+    for (let r = k.r; r > 3; r -= 2.6 + Math.random() * 2) {
+      ctx.strokeStyle = "rgba(30,17,7," + (0.12 + Math.random() * 0.2).toFixed(2) + ")";
+      ctx.lineWidth = 1 + Math.random() * 1.6;
+      ctx.beginPath(); ctx.ellipse(0, 0, r, r * (0.8 + Math.random() * 0.25), 0, 0, Math.PI * 2); ctx.stroke();
+    }
+    const rg = ctx.createRadialGradient(0, 0, 0, 0, 0, k.r * 0.45);
+    rg.addColorStop(0, "rgba(22,12,5,0.85)"); rg.addColorStop(1, "rgba(22,12,5,0)");
+    ctx.fillStyle = rg; ctx.beginPath(); ctx.ellipse(0, 0, k.r * 0.45, k.r * 0.45, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  for (let i = 0; i < 2400; i++) { // fine pores: short vertical dashes
+    const x = Math.random() * W, y = Math.random() * H, l = 3 + Math.random() * 8;
+    ctx.strokeStyle = Math.random() < 0.6
+      ? "rgba(25,14,6," + (0.05 + Math.random() * 0.08).toFixed(2) + ")"
+      : "rgba(200,160,110," + (0.04 + Math.random() * 0.06).toFixed(2) + ")";
+    ctx.lineWidth = 0.7;
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + (Math.random() - 0.5) * 1.5, y + l); ctx.stroke();
+  }
+  const sheen = ctx.createLinearGradient(0, 0, W, 0); // soft light catching the finish
+  sheen.addColorStop(0, "rgba(255,222,175,0)"); sheen.addColorStop(0.3, "rgba(255,226,182,0.09)");
+  sheen.addColorStop(0.5, "rgba(255,226,182,0)"); sheen.addColorStop(0.78, "rgba(255,226,182,0.05)");
+  sheen.addColorStop(1, "rgba(255,222,175,0)");
+  ctx.fillStyle = sheen; ctx.fillRect(0, 0, W, H);
+  const vg = ctx.createRadialGradient(W / 2, H / 2, H * 0.25, W / 2, H / 2, H * 0.72); // gentle vignette
+  vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(12,7,3,0.34)");
+  ctx.fillStyle = vg; ctx.fillRect(0, 0, W, H);
+  const tex = new THREE.CanvasTexture(cv); tex.anisotropy = 8;
+  tex.colorSpace = THREE.SRGBColorSpace; // canvas is authored in sRGB; without this the map washes out
+  return tex;
 }
 const boardMesh = new THREE.Mesh(
   new THREE.PlaneGeometry(2 * HW + 0.4, 2 * HH + 0.4),
