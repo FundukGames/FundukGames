@@ -712,11 +712,14 @@ function placeBumperFree(x, y, item) {
 }
 // Clamp a point to a legal spot inside the field. WALL_PAD keeps a modifier far
 // enough from each wall that a nut can still slip down the side channel.
+// TOP_PAD keeps modifiers away from the spawn line: parked right under a drop
+// column they would catch every nut before it spreads (free-value abuse).
 const WALL_PAD = BUMP_R + 2 * NUT_R + 0.1;
+const TOP_PAD = 2.5;
 function clampInArena(p) {
   return {
     x: Math.max(-HW + WALL_PAD, Math.min(HW - WALL_PAD, p.x)),
-    y: Math.max(DRAIN_Y + 1.3, Math.min(SPAWN_Y - 0.6, p.y)),
+    y: Math.max(DRAIN_Y + 1.3, Math.min(SPAWN_Y - TOP_PAD, p.y)),
   };
 }
 // Keep at least a nut-diameter clear gap between modifiers, so a nut can always
@@ -729,6 +732,13 @@ function overlapsOther(x, y, except) {
 const ghost = new THREE.Mesh(new THREE.TorusGeometry(BUMP_R + 0.06, 0.06, 8, 28),
   new THREE.MeshBasicMaterial({ color: 0x19c37d, transparent: true, opacity: 0.9 }));
 ghost.visible = false; ghost.renderOrder = 9; scene.add(ghost);
+// Dashed line marking the no-place zone under the spawn row; shown only while
+// a modifier is being dragged so the clamp doesn't feel arbitrary.
+const zoneLine = new THREE.Line(
+  new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-HW, SPAWN_Y - TOP_PAD, 0.4), new THREE.Vector3(HW, SPAWN_Y - TOP_PAD, 0.4)]),
+  new THREE.LineDashedMaterial({ color: 0xff5a5a, transparent: true, opacity: 0.45, dashSize: 0.22, gapSize: 0.16 }));
+zoneLine.computeLineDistances(); zoneLine.visible = false; zoneLine.renderOrder = 9; scene.add(zoneLine);
 const GHOST_COL = { valid: 0x19c37d, invalid: 0xff5a5a, full: 0xff5a5a, merge: 0x5fc8ff };
 function dropState(x, y, item, except) {
   const tgt = bumpers.find((b) => b !== except && Math.hypot(b.x - x, b.y - y) < BUMP_R * 1.3);
@@ -737,8 +747,8 @@ function dropState(x, y, item, except) {
   if (overlapsOther(x, y, except)) return "invalid";
   return "valid";
 }
-function showGhost(x, y, state) { ghost.position.set(x, y, 0.55); ghost.material.color.setHex(GHOST_COL[state] || 0xffffff); ghost.visible = true; }
-function hideGhost() { ghost.visible = false; }
+function showGhost(x, y, state) { ghost.position.set(x, y, 0.55); ghost.material.color.setHex(GHOST_COL[state] || 0xffffff); ghost.visible = true; zoneLine.visible = true; }
+function hideGhost() { ghost.visible = false; zoneLine.visible = false; }
 function moveBumper(b, x, y) {
   b.x = x; b.y = y;
   if (b.type === "funnel") {
@@ -909,7 +919,11 @@ function loadGame() {
     score = s.score || 0; displayScore = score;
     CAPACITY = s.CAPACITY || CAPACITY; baseValue = s.baseValue || 1;
     flowInterval = s.flowInterval || 1.0; maxOnField = s.maxOnField || 1;
-    (s.bumpers || []).forEach((b) => { if (TYPES[b.type]) placeBumperFree(b.x, b.y, mkItem(b.type, b.value)); });
+    (s.bumpers || []).forEach((b) => { // clampInArena: saves from before TOP_PAD may hold spots that are now illegal
+      if (!TYPES[b.type]) return;
+      const c = clampInArena({ x: b.x, y: b.y });
+      placeBumperFree(c.x, c.y, mkItem(b.type, b.value));
+    });
     (s.inventory || []).forEach((it, i) => { if (it && TYPES[it.type] && i < INV_SLOTS) inventory[i] = mkItem(it.type, it.value); });
     return true;
   } catch (e) { try { localStorage.removeItem(SAVE_KEY); } catch (e2) {} return false; }
