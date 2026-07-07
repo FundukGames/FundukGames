@@ -100,7 +100,8 @@ window.Solitaire = (function () {
 
       var tab = document.createElement("div");
       tab.className = "sol-tableau";
-      tab.style.gridTemplateColumns = "repeat(" + lay.tableau.length + ", minmax(34px, 1fr))";
+      // 10-column Spider must fit a 390px phone: allow narrower tracks there
+      tab.style.gridTemplateColumns = "repeat(" + lay.tableau.length + ", minmax(" + (lay.tableau.length >= 10 ? 26 : 34) + "px, 1fr))";
       lay.tableau.forEach(function (item) { tab.appendChild(makePileEl(item, true)); });
       board.appendChild(tab);
 

@@ -70,6 +70,14 @@
 
     .stat { margin-left: auto; font-size: .78rem; font-weight: 700; color: var(--ink-soft); background: #ffffffaa;
       padding: 5px 10px; border-radius: 999px; }
+    /* Sound + full-reset: proper touch targets, visually separated (reset is destructive) */
+    #sndbtn, #resetbtn { border: 0; cursor: pointer; font-size: 1.05rem; min-width: 42px; min-height: 42px;
+      display: inline-flex; align-items: center; justify-content: center; border-radius: 13px; margin-left: 0; }
+    #resetbtn { margin-left: 10px; }
+    #homelink { display: inline-flex; align-items: center; min-height: 40px; padding: 6px 13px; border-radius: 999px;
+      background: #ffffffcc; color: var(--purple-d); font-weight: 800; font-size: .9rem; text-decoration: none;
+      box-shadow: var(--shadow); white-space: nowrap; }
+    #homelink:hover { background: #fff; }
 
     /* Board: rails + arena */
     #board { display: grid; grid-template-columns: 232px 1fr 232px; gap: 10px; min-height: 0; }
@@ -82,8 +90,8 @@
     #popups { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
     #lanebtns { position: absolute; inset: 0; pointer-events: none; }
     #lanebtns .lanebtn { position: absolute; transform: translate(-50%, -50%); pointer-events: auto; border: 0;
-      border-radius: 8px; background: linear-gradient(180deg, #ffd964, #f5a623); color: #4a2e00; font-weight: 800;
-      font-size: .72rem; padding: 5px 8px; cursor: pointer; box-shadow: 0 2px 0 rgba(0,0,0,.25); white-space: nowrap; }
+      border-radius: 9px; background: linear-gradient(180deg, #ffd964, #f5a623); color: #4a2e00; font-weight: 800;
+      font-size: .72rem; padding: 9px 10px; min-height: 36px; cursor: pointer; box-shadow: 0 2px 0 rgba(0,0,0,.25); white-space: nowrap; }
     #lanebtns .lanebtn:disabled { background: #b9a85e; color: #6b5a2a; box-shadow: none; cursor: default; opacity: .7; }
 
     /* Bottom bar: inventory + controls */
@@ -197,9 +205,17 @@
     @media (max-width: 880px) {
       #board { grid-template-columns: minmax(0, 1fr); }
       #topbar { flex-wrap: wrap; row-gap: 6px; }
-      .stagename { flex: 1 1 100%; order: 5; }  /* stage name drops to its own line */
+      .stagename { display: none; }              /* flavor text — not worth a topbar row on phones */
       .stat { display: none; }                   /* hide the nuts/fps debug readout on phones */
-      #sndbtn, #resetbtn { display: inline-block; } /* ...but keep the sound + reset buttons */
+      #sndbtn, #resetbtn { display: inline-flex; } /* ...but keep the sound + reset buttons */
+      /* compact chips: the whole HUD should fit two rows before the arena */
+      .balance { font-size: 1.1rem; padding: 5px 12px 5px 10px; }
+      .levelchip { font-size: .82rem; padding: 5px 10px; }
+      .fieldchip { font-size: .75rem; padding: 4px 9px; }
+      .lvlbar { flex: 1 1 60px; height: 10px; }
+      .nextbtn { padding: 6px 12px; font-size: .78rem; }
+      #homelink { min-height: 36px; padding: 5px 11px; font-size: .82rem; }
+      #homelink .hl-txt { display: none; }       /* just the tree icon on phones */
       #tabs { display: flex; position: relative; z-index: 40; } /* always tappable above the drawer */
       #drawer-backdrop { position: fixed; inset: 0; background: rgba(28,18,56,.42); z-index: 25;
         opacity: 0; pointer-events: none; transition: opacity .22s; }
@@ -214,6 +230,7 @@
 <body>
   <div id="app">
     <header id="topbar">
+      <a id="homelink" href="/" title="All Funduk games — free puzzles">🌳<span class="hl-txt"> Games</span></a>
       <span class="balance"><span class="ico">🌰</span><span id="score">0</span></span>
       <span class="levelchip">Stage <b id="lvl">1</b></span>
       <span class="stagename" id="stagename"></span>
@@ -222,8 +239,8 @@
       <button id="nextbtn" class="nextbtn"></button>
       <span id="hint"></span>
       <span class="stat">nuts <span id="nuts">0</span> · <span id="fps">0</span>fps</span>
-      <button id="sndbtn" class="stat" style="border:0;cursor:pointer;font-size:.95rem;" title="Sound on/off">🔊</button>
-      <button id="resetbtn" class="stat" style="border:0;cursor:pointer;font-size:.95rem;" title="Reset ALL progress">↺</button>
+      <button id="sndbtn" class="stat" title="Sound on/off">🔊</button>
+      <button id="resetbtn" class="stat" title="Reset ALL progress">↺</button>
     </header>
     <div id="toast"></div>
     <div id="tip"></div>
