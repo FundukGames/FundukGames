@@ -424,7 +424,7 @@ window.Solitaire = (function () {
       LS.set(cfg.key + "_solved", stats.solved); LS.set(cfg.key + "_streak", stats.streak);
       LS.set(cfg.key + "_lastDaily", stats.lastDaily); LS.set(cfg.key + "_best", stats.best);
       renderStats();
-      setMessage("🎉 Solved in " + formatTime(elapsed) + "!", "ok");
+      setMessage("Solved in " + formatTime(elapsed) + "!", "ok");
       lastElapsed = elapsed;
       var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       if (reduce) showWinModal(elapsed);
@@ -478,7 +478,7 @@ window.Solitaire = (function () {
       var sub = document.getElementById("win-sub");
       var s = loadStats();
       var txt = "Solved in " + formatTime(elapsed) + " · " + moves + " moves";
-      if (mode === "daily" && s.streak > 0) txt += " · 🔥 " + s.streak + " day streak";
+      if (mode === "daily" && s.streak > 0) txt += " · " + s.streak + " day streak";
       if (sub) sub.textContent = txt;
       modal.hidden = false;
     }
@@ -495,13 +495,13 @@ window.Solitaire = (function () {
       lines.push(base);
       var text = lines.join("\n");
       if (navigator.share) navigator.share({ title: cfg.name, text: text }).catch(function () {});
-      else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { setMessage("📋 Result copied!", "ok"); }, function () { fallbackCopy(text); });
+      else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { setMessage("Result copied!", "ok"); }, function () { fallbackCopy(text); });
       else fallbackCopy(text);
     }
     function fallbackCopy(text) {
       var ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
       document.body.appendChild(ta); ta.select();
-      try { document.execCommand("copy"); setMessage("📋 Result copied!", "ok"); } catch (e) { setMessage("Couldn't copy.", "warn"); }
+      try { document.execCommand("copy"); setMessage("Result copied!", "ok"); } catch (e) { setMessage("Couldn't copy.", "warn"); }
       document.body.removeChild(ta);
     }
 

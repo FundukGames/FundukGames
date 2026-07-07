@@ -14,17 +14,20 @@
   // 10 well-separated region colors — light enough for dark glyphs to read.
   // Hand-spread across the wheel (red→orange→yellow→lime→teal→sky→blue→violet→
   // pink) plus one warm neutral, so no two are an easy-to-confuse near-duplicate.
+  // 10 saturated, hue-separated region colors — light enough for dark glyphs,
+  // strong enough that neighbouring regions never blur together. The thick
+  // region borders (see buildBoard) do the rest of the separation work.
   const PALETTE = [
-    "#ff8b8b", // red
-    "#ffb05c", // orange
-    "#f4d23f", // yellow
-    "#9fd45e", // lime
-    "#46cfa6", // teal
-    "#58c4ef", // sky
-    "#7d97f2", // blue
-    "#b98cf0", // violet
-    "#ff8fc6", // pink
-    "#cdb083"  // tan (neutral)
+    "#f4735c", // coral red
+    "#f8c57f", // sand orange
+    "#e4ec7a", // yellow-green
+    "#a8d89a", // green
+    "#7cd4c4", // teal
+    "#90bdf7", // blue
+    "#bb9ae8", // violet
+    "#f7a8c4", // pink
+    "#dcdcd8", // light gray
+    "#b4ac9c"  // taupe (neutral)
   ];
 
   // ---- region colouring: keep adjacent regions far apart in colour ----------
@@ -165,6 +168,9 @@
     const board = els.board;
     board.innerHTML = "";
     board.style.setProperty("--n", n);
+    // Thick dark border where two regions meet (drawn as inset shadows via the
+    // --rb custom property, so state highlights can stack on top in CSS).
+    const BW = "2.5px", BC = "#2c3230";
     for (let r = 0; r < n; r++) {
       for (let c = 0; c < n; c++) {
         const cell = document.createElement("button");
@@ -173,6 +179,12 @@
         cell.dataset.r = r;
         cell.dataset.c = c;
         cell.style.background = state.regionColor[state.regions[r][c]];
+        const reg = state.regions[r][c], rb = [];
+        if (c + 1 < n && state.regions[r][c + 1] !== reg) rb.push("inset -" + BW + " 0 0 " + BC);
+        if (c > 0 && state.regions[r][c - 1] !== reg) rb.push("inset " + BW + " 0 0 " + BC);
+        if (r + 1 < n && state.regions[r + 1][c] !== reg) rb.push("inset 0 -" + BW + " 0 " + BC);
+        if (r > 0 && state.regions[r - 1][c] !== reg) rb.push("inset 0 " + BW + " 0 " + BC);
+        if (rb.length) cell.style.setProperty("--rb", rb.join(", "));
         cell.setAttribute("aria-label", "row " + (r + 1) + " column " + (c + 1));
         board.appendChild(cell);
       }
@@ -360,7 +372,7 @@
     LS.set("cg_lastDaily", stats.lastDaily);
     LS.set("cg_best", stats.best);
     renderStats();
-    setMessage("🎉 Solved in " + formatTime(elapsed) + "!", "ok");
+    setMessage("Solved in " + formatTime(elapsed) + "!", "ok");
     showWinModal(elapsed);
   }
 
@@ -370,7 +382,7 @@
     const sub = document.getElementById("win-sub");
     const s = loadStats();
     let txt = "Solved in " + formatTime(elapsed);
-    if (state.mode === "daily" && s.streak > 0) txt += " · 🔥 " + s.streak + " day streak";
+    if (state.mode === "daily" && s.streak > 0) txt += " · " + s.streak + " day streak";
     if (sub) sub.textContent = txt;
     modal.hidden = false;
   }
@@ -447,7 +459,7 @@
       navigator.share({ title: "CrownGrid", text: text }).catch(function () {});
     } else if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(
-        function () { setMessage("📋 Result copied — paste it anywhere!", "ok"); },
+        function () { setMessage("Result copied — paste it anywhere!", "ok"); },
         function () { fallbackCopy(text); }
       );
     } else {
@@ -462,7 +474,7 @@
     ta.style.opacity = "0";
     document.body.appendChild(ta);
     ta.select();
-    try { document.execCommand("copy"); setMessage("📋 Result copied!", "ok"); }
+    try { document.execCommand("copy"); setMessage("Result copied!", "ok"); }
     catch (e) { setMessage("Couldn't copy automatically — long-press to copy.", "warn"); }
     document.body.removeChild(ta);
   }

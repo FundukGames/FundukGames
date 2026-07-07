@@ -130,7 +130,7 @@
     if (!stats.best[state.difficulty] || elapsed < stats.best[state.difficulty]) stats.best[state.difficulty] = elapsed;
     LS.set("su_solved", stats.solved); LS.set("su_streak", stats.streak); LS.set("su_lastDaily", stats.lastDaily); LS.set("su_best", stats.best);
     renderStats();
-    setMessage("🎉 Solved in " + formatTime(elapsed) + "!", "ok");
+    setMessage("Solved in " + formatTime(elapsed) + "!", "ok");
     showWinModal(elapsed);
   }
   function showWinModal(elapsed) {
@@ -138,7 +138,7 @@
     const sub = document.getElementById("win-sub");
     const s = loadStats();
     let txt = "Solved in " + formatTime(elapsed);
-    if (state.mode === "daily" && s.streak > 0) txt += " · 🔥 " + s.streak + " day streak";
+    if (state.mode === "daily" && s.streak > 0) txt += " · " + s.streak + " day streak";
     if (sub) sub.textContent = txt;
     modal.hidden = false;
   }
@@ -180,13 +180,13 @@
     lines.push(base);
     const text = lines.join("\n");
     if (navigator.share) navigator.share({ title: "Sudoku", text: text }).catch(function () {});
-    else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { setMessage("📋 Result copied!", "ok"); }, function () { fallbackCopy(text); });
+    else if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function () { setMessage("Result copied!", "ok"); }, function () { fallbackCopy(text); });
     else fallbackCopy(text);
   }
   function fallbackCopy(text) {
     const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
     document.body.appendChild(ta); ta.select();
-    try { document.execCommand("copy"); setMessage("📋 Result copied!", "ok"); } catch (e) { setMessage("Couldn't copy — long-press to copy.", "warn"); }
+    try { document.execCommand("copy"); setMessage("Result copied!", "ok"); } catch (e) { setMessage("Couldn't copy — long-press to copy.", "warn"); }
     document.body.removeChild(ta);
   }
 

@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a6cff"/><stop offset="1" stop-color="#5a3de0"/></linearGradient>
-    <linearGradient id="nut" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd964"/><stop offset="1" stop-color="#f09c1a"/></linearGradient>
-    <linearGradient id="cap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9c6430"/><stop offset="1" stop-color="#77451c"/></linearGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a6cff"></stop><stop offset="1" stop-color="#5a3de0"></stop></linearGradient>
+    <linearGradient id="nut" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd964"></stop><stop offset="1" stop-color="#f09c1a"></stop></linearGradient>
+    <linearGradient id="cap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9c6430"></stop><stop offset="1" stop-color="#77451c"></stop></linearGradient>
   </defs>
-  <rect width="64" height="64" rx="14" fill="url(#g)"/>
-  <path d="M32 20 C42.5 20 48.5 28 48.5 37.5 C48.5 48 40.7 54.5 32 54.5 C23.3 54.5 15.5 48 15.5 37.5 C15.5 28 21.5 20 32 20 Z" fill="url(#nut)"/>
-  <path d="M15 34 C16.4 22.5 24.2 17 32 17 C39.8 17 47.6 22.5 49 34 C43.3 29.6 37.6 27.8 32 27.8 C26.4 27.8 20.7 29.6 15 34 Z" fill="url(#cap)"/>
-  <path d="M29.4 10.5 C29.4 9.2 30.5 8.3 32 8.3 C33.5 8.3 34.6 9.2 34.6 10.5 L34.6 18.5 L29.4 18.5 Z" fill="#77451c"/>
-  <circle cx="24.5" cy="39" r="3.8" fill="#ffffff" opacity=".4"/>
+  <rect width="64" height="64" rx="14" fill="url(#g)"></rect>
+  <path d="M32 20 C42.5 20 48.5 28 48.5 37.5 C48.5 48 40.7 54.5 32 54.5 C23.3 54.5 15.5 48 15.5 37.5 C15.5 28 21.5 20 32 20 Z" fill="url(#nut)"></path>
+  <path d="M15 34 C16.4 22.5 24.2 17 32 17 C39.8 17 47.6 22.5 49 34 C43.3 29.6 37.6 27.8 32 27.8 C26.4 27.8 20.7 29.6 15 34 Z" fill="url(#cap)"></path>
+  <path d="M29.4 10.5 C29.4 9.2 30.5 8.3 32 8.3 C33.5 8.3 34.6 9.2 34.6 10.5 L34.6 18.5 L29.4 18.5 Z" fill="#77451c"></path>
+  <circle cx="24.5" cy="39" r="3.8" fill="#ffffff" opacity=".4"></circle>
 </svg>
