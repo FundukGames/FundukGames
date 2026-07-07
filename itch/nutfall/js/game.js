@@ -363,9 +363,9 @@ function spawnTop() {
   const n = nuts.find((q) => !q.active);
   if (!n) return false;
   n.active = true; inPlay++;
-  // Small random offset per drop: an exact, repeatable drop column is what made
-  // the park-a-peg-under-it exploit possible.
-  n.x = DROP_X[dropIdx] + (Math.random() - 0.5) * 0.6; dropIdx = (dropIdx + 1) % DROP_X.length;
+  // Small random offset per drop (±0.15): an exact, repeatable drop column is
+  // what made the park-a-peg-under-it exploit possible.
+  n.x = DROP_X[dropIdx] + (Math.random() - 0.5) * 0.3; dropIdx = (dropIdx + 1) % DROP_X.length;
   n.y = SPAWN_Y;
   n.vx = 0; n.vy = -1;
   n.value = baseValue; n.cool = 0; n.hits = {};
@@ -1402,10 +1402,10 @@ function frame(now) {
         continue;
       }
       if (bounceObstacle(n, b, BUMP_R, BUMP_BOUNCE)) {
-        // Anti-trap: twist every rebound a few degrees (a nut parked dead-center
-        // above a disc would otherwise bounce vertically forever), and shove a
-        // slow nut sideways so it rolls off instead of resting on top.
-        const ja = (Math.random() - 0.5) * 0.35, jc = Math.cos(ja), jsn = Math.sin(ja);
+        // Anti-trap: twist every rebound a few degrees (±5° — a nut parked
+        // dead-center above a disc would otherwise bounce vertically forever),
+        // and shove a slow nut sideways so it rolls off instead of resting on top.
+        const ja = (Math.random() - 0.5) * 0.175, jc = Math.cos(ja), jsn = Math.sin(ja);
         const jvx = n.vx * jc - n.vy * jsn; n.vy = n.vx * jsn + n.vy * jc; n.vx = jvx;
         if (Math.hypot(n.vx, n.vy) < 2)
           n.vx += (Math.sign(n.x - b.x) || (Math.random() < 0.5 ? -1 : 1)) * (0.9 + Math.random() * 0.7);
