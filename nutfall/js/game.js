@@ -248,7 +248,7 @@ function laneUpgCost(ln) { return TYPES.mul.cost(Math.round((ln.mult + 0.1) * 10
 function upgradeLane(i) {
   const ln = LANES[i]; const c = laneUpgCost(ln);
   if (score < c) return;
-  score -= c;
+  score -= c; tutNotePurchase();
   ln.mult = Math.round((ln.mult + 0.1) * 10) / 10; ln.lvl++; ln.color = laneColor(ln.mult);
   ln.rim.material.color.set(ln.color);
   laneGroup.remove(ln.tag); ln.tag.material.map.dispose(); ln.tag.material.dispose();
@@ -303,6 +303,11 @@ const dummy = new THREE.Object3D();
 
 // ---- Modifier bumpers — placed by the player from the inventory -----------
 const bumpers = []; // populated at runtime; see placeBumperFree
+let bumperSeq = 0;  // per-bumper id, keys the per-nut hit counters below
+// Anti-farm: one modifier can pay the SAME nut at most this many times. Combined
+// with the rebound jitter this kills the "park a nut on a peg forever" exploit
+// while leaving organic double-hits untouched.
+const MOD_HIT_CAP = 4;
 
 // ---- Nut pool + InstancedMesh ---------------------------------------------
 // Hazelnut-ish silhouette, revolved into a solid — reads as a nut, not a ball,
@@ -317,7 +322,7 @@ nutMesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(MAX_
 nutMesh.castShadow = true;
 scene.add(nutMesh);
 const nuts = [];
-for (let i = 0; i < MAX_NUTS; i++) nuts.push({ active: false, x: 0, y: 0, vx: 0, vy: 0, value: 1, cool: 0 });
+for (let i = 0; i < MAX_NUTS; i++) nuts.push({ active: false, x: 0, y: 0, vx: 0, vy: 0, value: 1, cool: 0, hits: {} });
 const colLow = new THREE.Color(0x8a5a2b), colHigh = new THREE.Color(0xe0a83a), tmpCol = new THREE.Color();
 // Compact number format — used for the in-nut value and the +N goal popup.
 function fmtVal(v) {
@@ -358,10 +363,12 @@ function spawnTop() {
   const n = nuts.find((q) => !q.active);
   if (!n) return false;
   n.active = true; inPlay++;
-  n.x = DROP_X[dropIdx]; dropIdx = (dropIdx + 1) % DROP_X.length;
+  // Small random offset per drop: an exact, repeatable drop column is what made
+  // the park-a-peg-under-it exploit possible.
+  n.x = DROP_X[dropIdx] + (Math.random() - 0.5) * 0.6; dropIdx = (dropIdx + 1) % DROP_X.length;
   n.y = SPAWN_Y;
   n.vx = 0; n.vy = -1;
-  n.value = baseValue; n.cool = 0;
+  n.value = baseValue; n.cool = 0; n.hits = {};
   squirrelTargetX = n.x;  // squirrel hops to the drop column
   squirrelKick = 0.3;
   return true;
@@ -374,6 +381,7 @@ function trySplit(n) {
   c.active = true; inPlay++;
   c.x = n.x; c.y = n.y; c.vx = -n.vx; c.vy = n.vy * 0.7;
   c.value = n.value; c.cool = 0.2;
+  c.hits = Object.assign({}, n.hits); // clones inherit the caps — no split-refarming
 }
 
 // ---- HUD + input -----------------------------------------------------------
@@ -415,7 +423,7 @@ renderer.domElement.addEventListener("pointerdown", (e) => {
     if (tgt) {                                             // dropped onto a field modifier
       if (canMerge(inventory[armedSlot], tgt)) {           // identical -> merge into it (frees the slot)
         setBumperValue(tgt, tierUp(tgt.type, tgt.value));
-        inventory[armedSlot] = null; armedSlot = -1; updateInventory();
+        inventory[armedSlot] = null; armedSlot = -1; updateInventory(); tutNoteMerge();
       }                                                    // else: occupied by a different one -> no-op
     } else { placeFromInventory(p); }                      // empty spot -> place
     hideGhost(); return;
@@ -446,6 +454,7 @@ window.addEventListener("pointerup", () => {
   if (!dragBumper) return;
   if (!dragMoved) { dragBumper = null; return; } // a plain tap does nothing now (double-click removes)
   lastClickBumper = null; // a real drag shouldn't count toward a double-click
+  tutNoteDrag();
   const tgt = bumpers.find((b) => b !== dragBumper && Math.hypot(b.x - dragBumper.x, b.y - dragBumper.y) < BUMP_R * 1.3);
   if (tgt) {
     if (canMerge(dragBumper, tgt)) mergeInto(tgt, dragBumper);          // dropped onto identical -> merge
@@ -461,13 +470,14 @@ window.addEventListener("pointerup", () => {
 const UPGRADES = [
   { id: "cap",  name: "Capacity",   desc: "+1 nut",       base: 120, mult: 1.9,  level: 0, apply: () => CAPACITY++,                                          now: () => CAPACITY + " nuts" },
   { id: "slot", name: "Mod slots",  desc: "+1 on field",  base: 80,  mult: 2.5,  level: 0, apply: () => { if (maxOnField < fieldCap) maxOnField++; }, max: () => maxOnField >= fieldCap, now: () => maxOnField + "/" + fieldCap },
-  { id: "val",  name: "Base value", desc: "+1",           base: 100, mult: 1.6,  level: 0, apply: () => (baseValue += 1),                                    now: () => "start " + baseValue },
+  // Base value compounds with every × on the board, so its price climbs steeply.
+  { id: "val",  name: "Base value", desc: "+1",           base: 250, mult: 2.5,  level: 0, apply: () => (baseValue += 1),                                    now: () => "start " + baseValue },
   { id: "flow", name: "Drop rate",  desc: "faster drops", base: 220, mult: 1.75, level: 0, apply: () => (flowInterval = Math.max(0.12, flowInterval * 0.85)), max: () => flowInterval <= 0.12, now: () => flowInterval.toFixed(2) + "s" },
   // Persistent global multiplier (survives the level reset) — slow & steep.
   { id: "goal", name: "Goal bonus", desc: "+×0.05 · kept", base: 300, mult: 10,  level: 0, persist: true, apply: () => (GOAL_MULT = Math.round((GOAL_MULT + 0.05) * 100) / 100), now: () => "×" + GOAL_MULT.toFixed(2) },
 ];
 function upCost(u) { return Math.round(u.base * Math.pow(u.mult, u.level)); }
-function buyUpgrade(u) { const c = upCost(u); if (score < c) return; score -= c; u.level++; u.apply(); refreshShops(); }
+function buyUpgrade(u) { const c = upCost(u); if (score < c) return; score -= c; u.level++; u.apply(); tutNotePurchase(); refreshShops(); }
 
 const upList = document.getElementById("up-list");
 UPGRADES.forEach((u) => {
@@ -496,15 +506,25 @@ const TYPES = {
   // Tiered: each tier doubles the cost; buying a pre-merged tier adds a 15%
   // convenience commission over merging it yourself (merge only equal tiers).
   add:    { id: "add", name: "Add", color: "#ffce3a", min: 1, max: 10, step: 1,
+            desc: "+N to every nut that hits it",
             label: (v) => "+" + v,
             cost: (v) => v <= 1 ? 10 : Math.round(10 * Math.pow(2, v - 1) * 1.15) },
   mul:    { id: "mul", name: "Multiply", color: "#19c37d", min: 1.1, max: 2.0, step: 0.1,
+            desc: "multiplies a hitting nut ×N",
             label: (v) => "×" + (Math.round(v * 10) / 10),
             cost: (v) => { const k = Math.round((v - 1) * 10); return k <= 1 ? 45 : Math.round(45 * Math.pow(2, k - 1) * 1.15); } },
-  bump:   { id: "bump", name: "Bumper", color: "#c9bdff", fixed: true, label: () => "»", cost: () => 60 },
-  funnel: { id: "funnel", name: "Funnel", color: "#7fc8ff", fixed: true, label: () => "▽", cost: () => 200 },
-  split:  { id: "split", name: "Splitter", color: "#ff9d3a", fixed: true, label: () => "Y", cost: () => 500 },
+  bump:   { id: "bump", name: "Bumper", color: "#c9bdff", fixed: true, desc: "kicks nuts flying again", label: () => "»", cost: () => 5000 * Math.pow(100, ownedFixed("bump")) },
+  funnel: { id: "funnel", name: "Funnel", color: "#7fc8ff", fixed: true, desc: "tornado — pulls nuts toward it", label: () => "▽", cost: () => 4000 * Math.pow(100, ownedFixed("funnel")) },
+  split:  { id: "split", name: "Splitter", color: "#ff9d3a", fixed: true, desc: "clones any nut that hits it", label: () => "Y", cost: () => 10000 * Math.pow(100, ownedFixed("split")) },
 };
+// Fixed one-off modifiers get pricier the more of that type you already own this
+// run (field + inventory): the 2nd copy costs ×100 the base, the 3rd ×100 again.
+function ownedFixed(id) {
+  let c = 0;
+  for (const b of bumpers) if (b.type === id) c++;
+  for (const it of inventory) if (it && it.type === id) c++;
+  return c;
+}
 let shopType = "add", quality = TYPES.add.min;
 function typeUnlocked(id) {
   if (id === "mul") return unlockedMul;
@@ -533,8 +553,8 @@ buyBox.innerHTML =
   '<div class="bb-head"><button class="chip" id="bb-chip"></button><span id="bb-unit">quality</span></div>' +
   '<div class="bb-qty"><button id="bb-minus">−</button><input type="range" id="bb-slider" /><button id="bb-plus">+</button></div>' +
   '<div class="bb-foot"><span id="bb-qtyl"></span><button class="buy" id="bb-buy">Buy 🌰<span id="bb-total">0</span></button></div>';
-const bb = { chip: q("#bb-chip"), minus: q("#bb-minus"), plus: q("#bb-plus"), slider: q("#bb-slider"),
-  qtyl: q("#bb-qtyl"), total: q("#bb-total"), buy: q("#bb-buy") };
+const bb = { chip: q("#bb-chip"), unit: q("#bb-unit"), minus: q("#bb-minus"), plus: q("#bb-plus"),
+  slider: q("#bb-slider"), qtyl: q("#bb-qtyl"), total: q("#bb-total"), buy: q("#bb-buy") };
 function snapQuality(v) {
   const t = TYPES[shopType];
   v = Math.round(v / t.step) * t.step;
@@ -547,7 +567,7 @@ bb.buy.addEventListener("click", () => {
   const t = TYPES[shopType], fixed = !!t.fixed;
   const price = fixed ? t.cost() : t.cost(quality), slot = inventory.indexOf(null);
   if (score < price || slot < 0) return;
-  score -= price;
+  score -= price; tutNotePurchase();
   const value = fixed ? 0 : (t.id === "mul" ? Math.round(quality * 10) / 10 : quality);
   inventory[slot] = { type: t.id, value: value, label: fixed ? t.label() : t.label(quality), color: t.color };
   refreshShops(); updateInventory();
@@ -572,6 +592,7 @@ function updateMerchant() {
   });
   const fixed = !!t.fixed, full = inventory.indexOf(null) < 0;
   buyBox.classList.toggle("fixed", fixed);
+  bb.unit.textContent = t.desc; // what this modifier actually does
   if (fixed) {
     bb.chip.textContent = t.label(); bb.chip.style.background = t.color;
     bb.qtyl.textContent = t.name;
@@ -612,7 +633,7 @@ for (let i = 0; i < INV_SLOTS; i++) {
     if (!inventory[i]) return;
     // armed item + clicked an identical one -> merge in the inventory
     if (armedSlot >= 0 && armedSlot !== i && inventory[armedSlot] && canMerge(inventory[armedSlot], inventory[i])) {
-      inventory[i] = nextTierItem(inventory[i]); inventory[armedSlot] = null; armedSlot = i; updateInventory(); return;
+      inventory[i] = nextTierItem(inventory[i]); inventory[armedSlot] = null; armedSlot = i; updateInventory(); tutNoteMerge(); return;
     }
     armedSlot = armedSlot === i ? -1 : i; updateInventory();
     if (armedSlot === i) tip("place", "Now tap inside the <b>arena</b> to drop it where you want");
@@ -770,7 +791,7 @@ function placeBumperFree(x, y, item) {
   }
   const lbl = textSprite(lblText, BUMP_R * 1.7); lbl.position.set(x, y, 0.55);
   scene.add(disc); scene.add(lbl);
-  bumpers.push({ x, y, type: item.type, value: item.value, disc, lbl, item });
+  bumpers.push({ x, y, type: item.type, value: item.value, disc, lbl, item, bid: ++bumperSeq });
   tip("field", "<b>Drag</b> it to move · <b>double-click</b> to remove");
 }
 // Clamp a point to a legal spot inside the field. WALL_PAD keeps a modifier far
@@ -823,7 +844,7 @@ function moveBumper(b, x, y) {
   b.lbl.position.set(x, y, 0.5);
 }
 function placeFromInventory(p) {
-  if (bumpers.length >= maxOnField) { toast("Field is full — max " + maxOnField + " (merge to free a slot)"); return; }
+  if (bumpers.length >= maxOnField) { toast("Field is full — max " + maxOnField + " (merge to free a slot)"); tutNoteFieldFull(); return; }
   const c = clampInArena(p);
   if (overlapsOther(c.x, c.y, null)) return; // spot taken
   placeBumperFree(c.x, c.y, inventory[armedSlot]);
@@ -858,7 +879,7 @@ function mergeInto(target, src) {
   const i = bumpers.indexOf(src);
   scene.remove(src.disc); scene.remove(src.lbl);
   src.disc.material.dispose(); src.lbl.material.map.dispose(); src.lbl.material.dispose();
-  bumpers.splice(i, 1); updateFieldUI();
+  bumpers.splice(i, 1); updateFieldUI(); tutNoteMerge();
 }
 function updateFieldUI() {
   const el = document.getElementById("fieldcount");
@@ -928,6 +949,7 @@ function tryAdvance() {
   resetRun();
   toast("⬆ Level " + (stage + 1) + " — " + s.name + " · fresh start!");
   refreshShops(); updateStageUI();
+  tutNoteUnlock(); // a freshly opened merchant tab triggers the tab coachmark
   saveGame(); // a level-up must never be lost
 }
 const nextBtn = document.getElementById("nextbtn");
@@ -937,11 +959,13 @@ if (nextBtn) nextBtn.addEventListener("click", tryAdvance);
 // Saves both the persistent unlocks AND the current run (board, coins, upgrades),
 // so a reload in the same browser continues exactly where you left off.
 const SAVE_KEY = "nf_save_v1";
+let wiping = false; // set by the full reset: blocks the unload autosave from resurrecting the save
 function mkItem(type, value) {
   const t = TYPES[type];
   return { type: type, value: value, label: t.fixed ? t.label() : t.label(value), color: t.color };
 }
 function saveGame() {
+  if (wiping) return;
   try {
     const upLevels = {};
     UPGRADES.forEach((u) => (upLevels[u.id] = u.level));
@@ -992,6 +1016,23 @@ function loadGame() {
   } catch (e) { try { localStorage.removeItem(SAVE_KEY); } catch (e2) {} return false; }
 }
 loadGame();
+
+// ---- Full reset: wipe every save/state key and start from scratch ----------
+const resetBtn = document.getElementById("resetbtn");
+const resetModal = document.getElementById("reset-modal");
+if (resetBtn && resetModal) {
+  const closeReset = () => (resetModal.hidden = true);
+  resetBtn.addEventListener("click", () => (resetModal.hidden = false));
+  resetModal.addEventListener("click", (e) => { if (e.target === resetModal) closeReset(); });
+  document.getElementById("rm-cancel").addEventListener("click", closeReset);
+  window.addEventListener("keydown", (e) => { if (e.key === "Escape" && !resetModal.hidden) closeReset(); });
+  document.getElementById("rm-confirm").addEventListener("click", () => {
+    wiping = true; // saveGame() (interval/unload) must not write the old state back
+    try { ["nf_save_v1", "nf_tips", "nf_tut_v1", "nf_snd"].forEach((k) => localStorage.removeItem(k)); } catch (e) {}
+    location.reload();
+  });
+}
+
 setInterval(saveGame, 3000);                                   // steady autosave
 window.addEventListener("beforeunload", saveGame);             // ...and on the way out
 window.addEventListener("pagehide", saveGame);                 // mobile Safari
@@ -1000,6 +1041,276 @@ document.addEventListener("visibilitychange", () => { if (document.hidden) saveG
 refreshShops();
 updateInventory();
 updateStageUI();
+
+// ---- Interactive tutorial: a pointing hand that walks the first level ------
+// The hand demonstrates each core gesture in order — buy a modifier, place it,
+// drag it, buy a twin, merge them — then two optional, skippable nudges: a
+// shopping hint at 80 🌰 and a pointer at the merchant tab when a new modifier
+// type unlocks. Steps complete by watching real game state (the player performs
+// the action; the hand only shows where), and progress persists per browser.
+const TUT_KEY = "nf_tut_v1";
+let tut = {};
+try { tut = JSON.parse(localStorage.getItem(TUT_KEY) || "{}"); } catch (e) {}
+function tutSave() { try { localStorage.setItem(TUT_KEY, JSON.stringify(tut)); } catch (e) {} }
+// Returning players (a run in progress or real lifetime earnings) skip the intro.
+if (stage > 0 || bumpers.length > 0 || inventory.some(Boolean) || lifetime > 400)
+  ["buy1", "place", "drag", "buy2", "merge", "hint80", "next1"].forEach((k) => (tut[k] = 1));
+if (Object.keys(TYPES).filter(typeUnlocked).length > 1) tut.tabs = 1;
+{ // the hand now teaches these; retire the matching one-shot coachmarks
+  const owned = [];
+  if (!tut.merge) owned.push("inv", "place", "merge", "field");
+  if (!tut.next1) owned.push("advance");
+  if (owned.length) {
+    owned.forEach((k) => (tipsSeen[k] = 1));
+    try { localStorage.setItem("nf_tips", JSON.stringify(tipsSeen)); } catch (e) {}
+  }
+}
+
+const coachEl = document.getElementById("coach");
+const coachHand = document.getElementById("coach-hand");
+const coachRing = document.getElementById("coach-ring");
+const coachBubble = document.getElementById("coach-bubble");
+
+// Signals fed from the gameplay handlers (merge/drag/purchase/unlock hooks).
+let tutMerged = false, tutDragged = false, tutNewType = null, tutPurchases = 0;
+let fieldFullTries = 0; // consecutive place attempts rejected because the field is full
+function tutNoteMerge() { tutMerged = true; }
+function tutNoteDrag() { tutDragged = true; }
+function tutNotePurchase() { tutPurchases++; }
+function tutNoteFieldFull() { fieldFullTries++; }
+let tutSeenTypes = null; // unlock snapshot, for spotting a freshly opened merchant tab
+function tutNoteUnlock() {
+  const open = Object.keys(TYPES).filter(typeUnlocked);
+  if (!tut.tabs && !tutNewType && tutSeenTypes) {
+    const fresh = open.find((id) => !tutSeenTypes.includes(id));
+    if (fresh) tutNewType = fresh;
+  }
+  tutSeenTypes = open;
+}
+tutNoteUnlock(); // baseline
+
+const isNarrow = window.matchMedia("(max-width: 880px)");
+const shopTabBtn = document.querySelector('#tabs button[data-drawer="right"]');
+const upgTabBtn = document.querySelector('#tabs button[data-drawer="left"]');
+function shopVisible() { return !isNarrow.matches || document.body.classList.contains("drawer-right"); }
+function upgradesVisible() { return !isNarrow.matches || document.body.classList.contains("drawer-left"); }
+function slotEl(i) { return invEl.querySelector('.slot[data-i="' + i + '"]'); }
+function screenAt(wx, wy) { // world point on the z=0 plane -> viewport px
+  projV.set(wx, wy, 0).project(camera);
+  const r = arenaEl.getBoundingClientRect();
+  return { x: r.left + (projV.x * 0.5 + 0.5) * r.width, y: r.top + (-projV.y * 0.5 + 0.5) * r.height };
+}
+function mergePair() { // a mergeable inventory item + its twin (field first, then inventory)
+  for (let i = 0; i < INV_SLOTS; i++) {
+    if (!inventory[i]) continue;
+    const b = bumpers.find((m) => canMerge(inventory[i], m));
+    if (b) return { inv: i, bumper: b };
+  }
+  for (let i = 0; i < INV_SLOTS; i++)
+    for (let j = i + 1; j < INV_SLOTS; j++)
+      if (inventory[i] && inventory[j] && canMerge(inventory[i], inventory[j])) return { inv: i, twin: j };
+  return null;
+}
+
+// Each step: when = eligible, done = the player performed it, view = what the
+// hand shows THIS frame (re-resolved live, so it tracks drawers and layout).
+// Array order is priority; a step only runs while every earlier one is done
+// or ineligible.
+const TUT_STEPS = [
+  { id: "buy1", delay: 0.8, when: () => stage === 0,
+    done: () => inventory.some(Boolean) || bumpers.length > 0,
+    view: () => shopVisible()
+      ? { el: bb.buy, mode: "tap", text: "Buy your first <b>+1</b> — nuts that hit it grow in value" }
+      : { el: shopTabBtn, mode: "tap", text: "Open the <b>Shop</b>" } },
+  { id: "place", delay: 0.3, when: () => stage === 0,
+    done: () => bumpers.length > 0,
+    view: () => {
+      const i = inventory.findIndex(Boolean);
+      if (i < 0) return null;
+      if (armedSlot < 0 || !inventory[armedSlot]) return { el: slotEl(i), mode: "tap", text: "Tap the slot to pick it up" };
+      const p = screenAt(0, 0.5);
+      return { x: p.x, y: p.y, mode: "tap", text: "Now tap the field to drop it" };
+    } },
+  { id: "drag", delay: 0.6, timeout: 7, when: () => stage === 0,
+    done: () => tutDragged,
+    view: () => {
+      const b = bumpers[0];
+      if (!b) return null;
+      const dir = b.x > 0 ? -1 : 1;
+      return { from: screenAt(b.x, b.y), to: screenAt(clampInArena({ x: b.x + dir * 2.4, y: b.y }).x, b.y),
+        mode: "drag", text: "<b>Hold & drag</b> to move it anywhere" };
+    } },
+  { id: "buy2", delay: 2.0, when: () => stage === 0,
+    done: () => tutMerged || !!mergePair(),
+    view: () => shopVisible()
+      ? { el: bb.buy, mode: "tap", text: "Buy <b>one more +1</b> — twins can merge" }
+      : { el: shopTabBtn, mode: "tap", text: "Back to the <b>Shop</b> — grab one more <b>+1</b>" } },
+  { id: "merge", delay: 0.4, when: () => stage === 0,
+    done: () => tutMerged,
+    view: () => {
+      const p = mergePair();
+      if (!p) return null;
+      const twin = p.bumper || inventory[p.twin];
+      if (armedSlot < 0 || !inventory[armedSlot] || !canMerge(inventory[armedSlot], twin))
+        return { el: slotEl(p.inv), mode: "tap", text: "Pick up the <b>+1</b>" };
+      if (p.bumper) {
+        const s = screenAt(p.bumper.x, p.bumper.y);
+        return { x: s.x, y: s.y, ringWorld: p.bumper, mode: "tap", text: "Drop it onto its twin — they merge into a <b>+2</b>!" };
+      }
+      const other = armedSlot === p.twin ? p.inv : p.twin;
+      return { el: slotEl(other), mode: "tap", text: "Tap its twin — they merge into a <b>+2</b>!" };
+    } },
+  { id: "hint80", delay: 0.5, buyDone: true, skip: "Maybe later",
+    when: () => stage === 0 && score >= 80, done: () => false,
+    view: () => shopVisible()
+      ? { el: bb.buy, mode: "point", text: "<b>80 🌰</b> saved — a stronger modifier pays for itself fast" }
+      : { el: shopTabBtn, mode: "point", text: "<b>80 🌰</b> saved — the Shop has stronger modifiers" } },
+  { id: "next1", delay: 0.6, skip: "Keep farming",
+    when: () => stage === 0 && score >= STAGES[1].need, done: () => stage > 0,
+    view: () => ({ el: nextBtn, mode: "tap",
+      text: "Stage goal reached! <b>Next ▶</b> pays " + fmtVal(STAGES[1].need) + " 🌰 and opens a fresh board — unlocks are kept" }) },
+  // Contextual (transient — can re-trigger): the player keeps trying to place a
+  // modifier with no free field slot. Route them to the Mod-slots upgrade, or —
+  // when this level's cap is hit — explain that merging is the way forward.
+  { id: "slots", delay: 0.3, transient: true, skip: "Got it",
+    when: () => fieldFullTries >= 2 && bumpers.length >= maxOnField,
+    done: () => bumpers.length < maxOnField,
+    view: () => {
+      if (maxOnField < fieldCap) { // the upgrade can still add room this level
+        if (!upgradesVisible()) return { el: upgTabBtn, mode: "tap", text: "No free slots — open <b>Upgrades</b>" };
+        const u = UPGRADES.find((x) => x.id === "slot");
+        return { el: upList.querySelector('.up-row[data-id="slot"] .buy'), mode: "tap",
+          text: "No free slots — <b>Mod slots</b> (" + fmtVal(upCost(u)) + " 🌰) adds room for one more" };
+      }
+      return { el: document.getElementById("fieldcount").parentElement, mode: "point",
+        text: "Level cap reached — <b>" + maxOnField + "</b> modifiers max. Merge two identical ones to free a slot" };
+    } },
+  { id: "tabs", delay: 1.2, skip: "Got it",
+    when: () => !!tutNewType, done: () => shopType === tutNewType,
+    view: () => {
+      if (!shopVisible()) return { el: shopTabBtn, mode: "tap", text: "Something new appeared in the <b>Shop</b>" };
+      const btn = modTypes.querySelector('.mtype[data-id="' + tutNewType + '"]');
+      if (!btn) return null;
+      return { el: btn, mode: "tap", text: "<b>" + TYPES[tutNewType].name + "</b> unlocked — this tab switches modifier types" };
+    } },
+];
+
+let tutStep = null, tutDelayT = 0, tutShownT = 0, tutCycle = 0, tutStartPurch = 0;
+let handX = 0, handY = 0, handOn = false, tutPrevPress = 0, tutLastHtml = "";
+
+function tutVisualsOff() {
+  if (coachHand) coachHand.classList.remove("show");
+  if (coachRing) coachRing.classList.remove("show");
+  if (coachBubble) coachBubble.classList.remove("show");
+  handOn = false; tutLastHtml = "";
+}
+function tutStart(s) { tutStep = s; tutDelayT = s.delay || 0; tutShownT = 0; tutCycle = 0; tutStartPurch = tutPurchases; tutPrevPress = 0; }
+function tutFinish() {
+  if (!tutStep) return;
+  if (tutStep.transient) fieldFullTries = 0; // re-arms after two more failed tries
+  else { tut[tutStep.id] = 1; tutSave(); }
+  // On phones the drawers cover the arena — tuck them away between steps.
+  if ((tutStep.id === "buy1" || tutStep.id === "buy2" || tutStep.id === "slots") &&
+      isNarrow.matches && typeof window.closeDrawers === "function")
+    window.closeDrawers();
+  tutStep = null; tutVisualsOff();
+}
+if (coachBubble) coachBubble.addEventListener("click", (e) => { if (e.target.classList.contains("skip")) tutFinish(); });
+
+function tutRipple(x, y) {
+  const el = document.createElement("div");
+  el.className = "coach-tap"; el.style.left = x + "px"; el.style.top = y + "px";
+  coachEl.appendChild(el);
+  el.addEventListener("animationend", () => el.remove());
+}
+
+function tutDrive(v, s, dt) {
+  // Resolve this frame's fingertip goal, press amount (0..1) and opacity.
+  let gx = v.x || 0, gy = v.y || 0, press = 0, alpha = 1, ring = null, ringRound = "16px";
+  if (v.el) {
+    const r = v.el.getBoundingClientRect();
+    if (!r.width && !r.height) { tutVisualsOff(); return; } // target not laid out this frame
+    gx = r.left + r.width / 2; gy = r.top + r.height / 2;
+    ring = { l: r.left - 6, t: r.top - 6, w: r.width + 12, h: r.height + 12 };
+  }
+  if (v.ringWorld) { // circular highlight around a field modifier
+    const edge = screenAt(v.ringWorld.x + BUMP_R + 0.12, v.ringWorld.y);
+    const pr = Math.abs(edge.x - gx);
+    ring = { l: gx - pr, t: gy - pr, w: 2 * pr, h: 2 * pr }; ringRound = "50%";
+  }
+  if (v.mode === "tap") {
+    const t = tutCycle % 1.7; // idle → press → lift, once per cycle
+    if (t > 0.55 && t < 0.95) press = Math.sin(((t - 0.55) / 0.4) * Math.PI);
+  } else if (v.mode === "point") {
+    gy += Math.sin(tutCycle * 2.4) * 5; // soft bob, no tapping
+  } else if (v.mode === "drag") {
+    const t = tutCycle % 3.6; // press at A → glide to B → release → fade back
+    let k = 0;
+    if (t < 0.5) { k = 0; press = t < 0.2 ? 0 : Math.min(1, (t - 0.2) / 0.25); }
+    else if (t < 2.0) { const u = (t - 0.5) / 1.5; k = u * u * (3 - 2 * u); press = 1; }
+    else if (t < 2.4) { k = 1; press = Math.max(0, 1 - (t - 2.0) / 0.3); }
+    else if (t < 2.9) { k = 1; alpha = 1 - (t - 2.4) / 0.5; }
+    else { k = 0; alpha = Math.min(1, (t - 2.9) / 0.6); }
+    gx = v.from.x + (v.to.x - v.from.x) * k;
+    gy = v.from.y + (v.to.y - v.from.y) * k;
+  }
+
+  if (!handOn) { handX = gx + 36; handY = gy + 110; handOn = true; coachHand.classList.add("show"); }
+  const rate = Math.min(1, dt * (v.mode === "drag" ? 15 : 10));
+  handX += (gx - handX) * rate; handY += (gy - handY) * rate;
+  if (alpha < 0.15) { handX = gx; handY = gy; } // reposition while invisible (drag loop restart)
+
+  const nearGoal = Math.hypot(gx - handX, gy - handY) < 30;
+  if (press > 0.5 && tutPrevPress <= 0.5 && nearGoal) tutRipple(gx, gy);
+  if (v.mode === "drag" && press < 0.5 && tutPrevPress >= 0.5 && alpha > 0.5) tutRipple(gx, gy);
+  tutPrevPress = press;
+
+  coachHand.style.opacity = alpha < 1 ? alpha.toFixed(2) : "";
+  const sway = -12 + Math.sin(tutCycle * 1.9) * 3.5 - press * 5; // idle wobble; leans in on press
+  coachHand.style.transform = "translate(" + (handX - 24.7).toFixed(1) + "px," + (handY - 5.3).toFixed(1) +
+    "px) rotate(" + sway.toFixed(1) + "deg) scale(" + (1 - 0.16 * press).toFixed(3) + ")";
+
+  if (ring) {
+    coachRing.style.left = ring.l + "px"; coachRing.style.top = ring.t + "px";
+    coachRing.style.width = ring.w + "px"; coachRing.style.height = ring.h + "px";
+    coachRing.style.borderRadius = ringRound;
+    coachRing.classList.add("show");
+  } else coachRing.classList.remove("show");
+
+  const html = "<span>" + v.text + "</span>" + (s.skip ? '<button class="skip">' + s.skip + "</button>" : "");
+  if (tutLastHtml !== html) { coachBubble.innerHTML = html; tutLastHtml = html; }
+  coachBubble.classList.add("show");
+  const bw = coachBubble.offsetWidth, bh = coachBubble.offsetHeight;
+  const bubX = v.from ? (v.from.x + v.to.x) / 2 : gx; // drag demo: anchor at the path middle
+  const topY = ring ? ring.t : (v.from ? Math.min(v.from.y, v.to.y) : gy) - 26;
+  let by = topY - bh - 12;
+  if (by < 8) by = (ring ? ring.t + ring.h : gy + 30) + 12;
+  coachBubble.style.left = Math.max(8, Math.min(window.innerWidth - bw - 8, bubX - bw / 2)) + "px";
+  coachBubble.style.top = by + "px";
+}
+
+function tutorialUpdate(dt) {
+  if (!coachEl || !coachHand || !coachRing || !coachBubble) return;
+  if (tutStep) {
+    const s = tutStep;
+    if (s.done() || (s.buyDone && tutPurchases > tutStartPurch) || (s.timeout && tutShownT >= s.timeout)) { tutFinish(); return; }
+    if (!s.when()) { tutStep = null; tutVisualsOff(); return; } // no longer applicable — abandon
+    if (tutDelayT > 0) { tutDelayT -= dt; return; }
+    const v = s.view();
+    if (!v) { tutVisualsOff(); return; }
+    tutShownT += dt; tutCycle += dt;
+    tutDrive(v, s, dt);
+    return;
+  }
+  for (const s of TUT_STEPS) {
+    if (tut[s.id]) continue;
+    if (s.done()) { // already performed on their own
+      if (s.transient) fieldFullTries = 0; else { tut[s.id] = 1; tutSave(); }
+      continue;
+    }
+    if (s.when()) { tutStart(s); return; }
+  }
+}
 
 // ---- Sound: bounce SFX (WebAudio — cheap overlapping one-shots) -------------
 let audioCtx = null, bounceBuf = null, sndOn = true, lastSndAt = 0;
@@ -1090,13 +1401,23 @@ function frame(now) {
         if (fdx * fdx + fdy * fdy < 4 && fdy > -0.4) n.vx += Math.sign(fdx) * 9 * dt;
         continue;
       }
-      if (bounceObstacle(n, b, BUMP_R, BUMP_BOUNCE) && n.cool <= 0) {
-        if (b.type === "add") n.value += b.value;
-        else if (b.type === "mul") n.value = Math.round(n.value * b.value * 10) / 10;
-        else if (b.type === "split") trySplit(n);
-        else if (b.type === "bump") { const sp = Math.hypot(n.vx, n.vy) || 1, k = Math.min(VMAX, sp * 1.5) / sp; n.vx *= k; n.vy *= k; } // speed boost
-        playBounce(Math.hypot(n.vx, n.vy) / VMAX);
-        n.cool = 0.15;
+      if (bounceObstacle(n, b, BUMP_R, BUMP_BOUNCE)) {
+        // Anti-trap: twist every rebound a few degrees (a nut parked dead-center
+        // above a disc would otherwise bounce vertically forever), and shove a
+        // slow nut sideways so it rolls off instead of resting on top.
+        const ja = (Math.random() - 0.5) * 0.35, jc = Math.cos(ja), jsn = Math.sin(ja);
+        const jvx = n.vx * jc - n.vy * jsn; n.vy = n.vx * jsn + n.vy * jc; n.vx = jvx;
+        if (Math.hypot(n.vx, n.vy) < 2)
+          n.vx += (Math.sign(n.x - b.x) || (Math.random() < 0.5 ? -1 : 1)) * (0.9 + Math.random() * 0.7);
+        if (n.cool <= 0) {
+          const hits = n.hits[b.bid] || 0, pays = hits < MOD_HIT_CAP; // hard per-nut cap per modifier
+          if (b.type === "add") { if (pays) { n.hits[b.bid] = hits + 1; n.value += b.value; } }
+          else if (b.type === "mul") { if (pays) { n.hits[b.bid] = hits + 1; n.value = Math.round(n.value * b.value * 10) / 10; } }
+          else if (b.type === "split") { if (pays) { n.hits[b.bid] = hits + 1; trySplit(n); } }
+          else if (b.type === "bump") { const sp = Math.hypot(n.vx, n.vy) || 1, k = Math.min(VMAX, sp * 1.8) / sp; n.vx *= k; n.vy *= k; } // speed boost
+          playBounce(Math.hypot(n.vx, n.vy) / VMAX);
+          n.cool = 0.15;
+        }
       }
     }
     // Hard speed cap — keeps fast nuts from tunnelling through walls / flying off.
@@ -1155,6 +1476,7 @@ function frame(now) {
   elNuts.textContent = inPlay + "/" + CAPACITY;
   updateStageBar();
   updateLaneButtons();
+  tutorialUpdate(dt);
   if (composer) composer.render(); else renderer.render(scene, camera);
   requestAnimationFrame(frame);
 }

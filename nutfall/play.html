@@ -145,6 +145,47 @@
     .bb-foot .buy:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0,0,0,.18); }
     .bb-foot .buy:disabled { background: #ddd6f0; color: #fff; box-shadow: none; cursor: default; }
 
+    /* Full-reset confirmation modal */
+    #reset-modal { position: fixed; inset: 0; z-index: 70; display: flex; align-items: center;
+      justify-content: center; background: rgba(20,12,48,.55); }
+    #reset-modal[hidden] { display: none; }
+    .rm-panel { background: #fff; border-radius: 18px; box-shadow: 0 18px 50px rgba(30,15,80,.4);
+      padding: 22px 24px; max-width: 330px; width: calc(100vw - 48px); text-align: center; }
+    .rm-panel h3 { margin: 0 0 8px; font-size: 1.15rem; }
+    .rm-panel p { margin: 0 0 16px; font-size: .88rem; color: var(--ink-soft); font-weight: 600; line-height: 1.45; }
+    .rm-btns { display: flex; gap: 10px; }
+    .rm-btns button { flex: 1; border: 0; border-radius: 12px; padding: 11px 0; font-weight: 800;
+      font-family: inherit; font-size: .9rem; cursor: pointer; box-shadow: 0 3px 0 rgba(0,0,0,.15); }
+    .rm-btns button:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.15); }
+    #rm-cancel { background: #f0ecff; color: var(--purple-d); }
+    #rm-confirm { background: linear-gradient(180deg, #ff7a7a, #e64949); color: #fff; }
+
+    /* Tutorial coach: a pointing hand that demonstrates gestures (game.js drives it) */
+    #coach { position: fixed; inset: 0; pointer-events: none; z-index: 60; }
+    #coach-hand { position: fixed; left: 0; top: 0; width: 56px; height: 56px;
+      transform-origin: 24.7px 5.3px; opacity: 0; transition: opacity .25s;
+      filter: drop-shadow(0 6px 10px rgba(28,15,64,.45)); will-change: transform; z-index: 3; }
+    #coach-hand.show { opacity: 1; }
+    #coach-hand svg { display: block; }
+    #coach-ring { position: fixed; border: 3px solid var(--gold); opacity: 0; transition: opacity .25s;
+      box-shadow: 0 0 0 0 rgba(255,206,58,.55); }
+    #coach-ring.show { opacity: 1; animation: coach-pulse 1.4s ease-out infinite; }
+    @keyframes coach-pulse { 0% { box-shadow: 0 0 0 0 rgba(255,206,58,.55); }
+      100% { box-shadow: 0 0 0 14px rgba(255,206,58,0); } }
+    #coach-bubble { position: fixed; max-width: 260px; background: #fff; color: var(--ink);
+      font-weight: 700; font-size: .92rem; line-height: 1.35; padding: 11px 14px; border-radius: 14px;
+      border: 2px solid #ffe08a; box-shadow: 0 10px 26px rgba(48,28,110,.28); opacity: 0;
+      transform: translateY(6px); transition: opacity .25s, transform .25s; z-index: 2; }
+    #coach-bubble.show { opacity: 1; transform: none; }
+    #coach-bubble b { color: var(--purple-d); }
+    #coach-bubble .skip { pointer-events: auto; display: block; margin: 9px 0 0; border: 0;
+      background: #f0ecff; color: var(--purple-d); font-weight: 800; font-size: .78rem; font-family: inherit;
+      padding: 7px 14px; border-radius: 999px; cursor: pointer; }
+    #coach-bubble .skip:active { transform: translateY(1px); }
+    .coach-tap { position: fixed; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%;
+      border: 3px solid #fff; box-shadow: 0 0 14px rgba(255,255,255,.9); animation: coach-tap .55s ease-out forwards; }
+    @keyframes coach-tap { 0% { transform: scale(.5); opacity: .95; } 100% { transform: scale(2.7); opacity: 0; } }
+
     /* Floating score / crack popups */
     .pop { position: absolute; transform: translate(-50%,-50%); font-weight: 900; font-size: 1.2rem;
       text-shadow: 0 2px 4px rgba(0,0,0,.45); animation: pop 1s ease-out forwards; }
@@ -158,7 +199,7 @@
       #topbar { flex-wrap: wrap; row-gap: 6px; }
       .stagename { flex: 1 1 100%; order: 5; }  /* stage name drops to its own line */
       .stat { display: none; }                   /* hide the nuts/fps debug readout on phones */
-      #sndbtn { display: inline-block; }         /* ...but keep the sound toggle */
+      #sndbtn, #resetbtn { display: inline-block; } /* ...but keep the sound + reset buttons */
       #tabs { display: flex; position: relative; z-index: 40; } /* always tappable above the drawer */
       #drawer-backdrop { position: fixed; inset: 0; background: rgba(28,18,56,.42); z-index: 25;
         opacity: 0; pointer-events: none; transition: opacity .22s; }
@@ -182,6 +223,7 @@
       <span id="hint"></span>
       <span class="stat">nuts <span id="nuts">0</span> · <span id="fps">0</span>fps</span>
       <button id="sndbtn" class="stat" style="border:0;cursor:pointer;font-size:.95rem;" title="Sound on/off">🔊</button>
+      <button id="resetbtn" class="stat" style="border:0;cursor:pointer;font-size:.95rem;" title="Reset ALL progress">↺</button>
     </header>
     <div id="toast"></div>
     <div id="tip"></div>
@@ -203,6 +245,50 @@
   </div>
 
   <div id="drawer-backdrop"></div>
+
+  <!-- Full-reset confirmation (wired up in game.js) -->
+  <div id="reset-modal" hidden>
+    <div class="rm-panel">
+      <h3>Start over from zero?</h3>
+      <p>This wipes <b>all</b> progress — levels, unlocks, upgrades, coins and the board. There is no undo.</p>
+      <div class="rm-btns">
+        <button id="rm-cancel">Cancel</button>
+        <button id="rm-confirm">Reset everything</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tutorial coach overlay (see the tutorial section in game.js). The hand is a
+       cartoon glove — index finger up, three curled-finger bumps, thumb at the
+       left, purple cuff. Its fingertip sits at viewBox (28.25,6) = 24.7,5.3 px,
+       which game.js uses as the pointing anchor. -->
+  <div id="coach"><div id="coach-ring"></div><div id="coach-bubble"></div>
+    <div id="coach-hand" aria-hidden="true"><svg viewBox="0 0 64 64" width="56" height="56">
+      <g stroke="#2a2150" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" fill="#fff">
+        <rect x="22.5" y="6" width="11.5" height="28" rx="5.7"/>
+        <ellipse cx="36" cy="40" rx="14" ry="11.5"/>
+        <circle cx="37.5" cy="30" r="5"/>
+        <circle cx="43.5" cy="31.5" r="4.6"/>
+        <circle cx="48" cy="34.5" r="4"/>
+        <ellipse cx="21" cy="36.5" rx="5" ry="7" transform="rotate(-15 21 36.5)"/>
+      </g>
+      <g fill="#fff"><!-- second fill pass hides the strokes where the shapes overlap -->
+        <rect x="22.5" y="6" width="11.5" height="28" rx="5.7"/>
+        <ellipse cx="36" cy="40" rx="14" ry="11.5"/>
+        <circle cx="37.5" cy="30" r="5"/>
+        <circle cx="43.5" cy="31.5" r="4.6"/>
+        <circle cx="48" cy="34.5" r="4"/>
+        <ellipse cx="21" cy="36.5" rx="5" ry="7" transform="rotate(-15 21 36.5)"/>
+      </g>
+      <g fill="none" stroke="#2a2150" stroke-width="2.4" stroke-linecap="round">
+        <path d="M40.5 28q1.5 3 .8 6"/>
+        <path d="M45.8 30.5q1.5 2.5 .8 5.2"/>
+        <path d="M23.5 33.5q-2.5 2 -2.3 5"/>
+      </g>
+      <rect x="24" y="48" width="25" height="11" rx="4.5" fill="#6c4cff" stroke="#2a2150" stroke-width="3"/>
+      <circle cx="36.5" cy="53.5" r="1.7" fill="#ffce3a"/>
+    </svg></div>
+  </div>
 
   <script>
     // Mobile drawers: each tab toggles its panel (tap again — or the backdrop — to close).
