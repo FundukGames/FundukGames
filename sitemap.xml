@@ -176,9 +176,21 @@
   </url>
   <url>
     <loc>https://fundukgames.com/blog/</loc>
-    <lastmod>2026-06-22</lastmod>
+    <lastmod>2026-07-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://fundukgames.com/blog/nutfall-strategy.html</loc>
+    <lastmod>2026-07-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://fundukgames.com/blog/spider-solitaire-strategy.html</loc>
+    <lastmod>2026-07-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://fundukgames.com/blog/games-like-queens.html</loc>
