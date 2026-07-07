@@ -170,7 +170,7 @@
     board.style.setProperty("--n", n);
     // Thick dark border where two regions meet (drawn as inset shadows via the
     // --rb custom property, so state highlights can stack on top in CSS).
-    const BW = "2.5px", BC = "#2c3230";
+    const BW = "1.5px", BC = "#2c3230";
     for (let r = 0; r < n; r++) {
       for (let c = 0; c < n; c++) {
         const cell = document.createElement("button");

@@ -222,9 +222,9 @@ a:hover { color: #f8e0a8; }
   box-shadow: 0 0 6px rgba(245, 160, 44, .45);
 }
 .sm-cell.is-moon::before {
-  /* crescent: transparent disc + offset inset shadow (matches the moon in the rules) */
+  /* crescent: transparent disc + offset inset shadow (horns up, like the tile icon) */
   background: transparent;
-  box-shadow: inset -0.34em 0.22em 0 0 #3c5a45;
+  box-shadow: inset 0.34em -0.22em 0 0 #3c5a45;
 }
 
 /* Small SunMoon icon (matches the in-game discs: gold sun + dark moon) */
