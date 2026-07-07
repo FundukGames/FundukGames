@@ -69,9 +69,7 @@ a:hover { color: #f8e0a8; }
 .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-weight: 700; font-size: 1.2rem; text-decoration: none; color: #fff; letter-spacing: -.01em; }
 .brand .crown {
   font-size: 1.15rem; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
-  width: 34px; height: 34px; border-radius: 10px;
-  background: linear-gradient(160deg, rgba(224, 166, 61, .38), rgba(224, 166, 61, .12));
-  border: 1px solid rgba(240, 188, 85, .4);
+  width: 34px; height: 34px;
 }
 .brand .crown svg { width: 19px; height: 19px; display: block; }
 .nav { display: flex; gap: 4px; }
