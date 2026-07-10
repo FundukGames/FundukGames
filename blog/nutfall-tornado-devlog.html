@@ -10,7 +10,7 @@
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
   <title>Building Nutfall's Tornado: From Flat Sprites to a GPU Vortex | Funduk Games</title>
-  <meta name="description" content="A dev log on building the tornado funnel in Nutfall — why flat sprites and emoji looked cheap, how a raymarched volumetric shader fixed it, and how we got it from 19fps to a smooth 60fps with six on screen." />
+  <meta name="description" content="Dev log: building Nutfall's tornado — why flat sprites looked cheap, how a raymarched volumetric shader fixed it, and the road to 60fps." />
   <meta name="theme-color" content="#101a15" />
   <link rel="canonical" href="https://fundukgames.com/blog/nutfall-tornado-devlog.html" />
   <meta property="og:image" content="https://fundukgames.com/og-image.png" />
@@ -19,6 +19,28 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Building Nutfall's Tornado: From Flat Sprites to a GPU Vortex",
+    "description": "A dev log on building the tornado funnel in Nutfall — why flat sprites and emoji looked cheap, how a raymarched volumetric shader fixed it, and how we got it from 19fps to a smooth 60fps with six on screen.",
+    "datePublished": "2026-06-22",
+    "dateModified": "2026-07-07",
+    "author": {
+      "@type": "Organization",
+      "name": "Funduk Games",
+      "url": "https://fundukgames.com/"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Funduk Games",
+      "url": "https://fundukgames.com/"
+    },
+    "image": "https://fundukgames.com/og-image.png",
+    "mainEntityOfPage": "https://fundukgames.com/blog/nutfall-tornado-devlog.html"
+  }
+  </script>
 </head>
 <body>
   <header class="site-header">
@@ -33,6 +55,7 @@
   <main class="container">
     <article class="section">
       <h1>Building Nutfall's Tornado: From Flat Sprites to a GPU Vortex</h1>
+      <p class="post-meta">Published June 22, 2026 · Updated July 7, 2026</p>
       <p><em>Dev notes · June 2026</em></p>
       <p><a href="../nutfall/play.html">Nutfall</a> has a modifier called the <strong>funnel</strong>: a
       swirling vortex that pulls falling nuts toward its column. On paper, simple. Making it actually

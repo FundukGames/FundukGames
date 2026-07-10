@@ -330,6 +330,7 @@ article.section h1 + p em {
   font-style: normal; font-size: .8rem; font-weight: 700; letter-spacing: .08em;
   text-transform: uppercase; color: var(--text-faint);
 }
+article.section .post-meta { font-size: .82rem; color: var(--text-faint); margin: -2px 0 18px; }
 article.section h2 { margin: 2em 0 .6em; font-size: 1.35rem; }
 article.section h2::before {
   content: ""; display: block; width: 26px; height: 4px; border-radius: 999px; margin-bottom: 10px;
