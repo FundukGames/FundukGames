@@ -740,3 +740,10 @@ article.section a:hover { color: #f8e0a8; }
 .g2-v2048 { background: linear-gradient(160deg, #f8d777, #e0a63d); color: #4d350c; box-shadow: 0 0 18px rgba(240, 188, 85, .8); }
 .g2-v4096 { background: #22301f; color: #f0bc55; box-shadow: 0 0 18px rgba(240, 188, 85, .6); }
 .g2-score { font-variant-numeric: tabular-nums; font-weight: 700; background: var(--chip); border-radius: 10px; padding: 4px 12px; color: var(--ink); }
+
+/* ───────────────────────── Snake ───────────────────────── */
+.sn-canvas {
+  display: block; width: 100%; max-width: 460px; aspect-ratio: 1 / 1; margin: 0 auto 12px;
+  border: 3px solid var(--board-line); border-radius: 12px; background: #fdfef9;
+  touch-action: none; user-select: none; -webkit-user-select: none;
+}
