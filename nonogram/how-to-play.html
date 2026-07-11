@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>How to Play Nonograms — Rules, Tips &amp; Strategy (Picture Cross)</title>
+  <meta name="description" content="How to play nonograms (picture cross / Picross): reading the clues, the overlap technique, edge logic, and the habits that solve any board without guessing." />
+  <meta name="theme-color" content="#101a15" />
+  <link rel="canonical" href="https://fundukgames.com/nonogram/how-to-play.html" />
+  <meta property="og:image" content="https://fundukgames.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="crown"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="3.5" fill="none" stroke="#f0bc55" stroke-width="2"/><rect x="7.4" y="7.4" width="4.4" height="4.4" fill="#f0bc55"/><rect x="12.2" y="7.4" width="4.4" height="4.4" fill="#2f6a49"/><rect x="12.2" y="12.2" width="4.4" height="4.4" fill="#f0bc55"/></svg></span> Nonogram</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="play.html">Play</a>
+      <a href="how-to-play.html">How to play</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>How to play nonograms</h1>
+      <p>A nonogram hides a pixel picture behind number clues. Here are the rules and the core
+      techniques that crack every board — no guessing required.</p>
+
+      <h2>The rules</h2>
+      <ul>
+        <li>The numbers beside a row (or above a column) list the <strong>runs of filled cells</strong>
+        in that line, in order. <strong>"4 2"</strong> means: a block of 4, a gap, then a block of 2.</li>
+        <li>Runs are separated by <strong>at least one empty cell</strong> — they never touch.</li>
+        <li>A <strong>0</strong> means the line is completely empty.</li>
+        <li>The board is complete when every row and column matches its clues.</li>
+      </ul>
+
+      <h2>Controls</h2>
+      <ul>
+        <li><strong>Fill</strong> tool paints cells; tap a filled cell to erase it.</li>
+        <li><strong>✕ Mark</strong> tool notes cells you've proven empty. On desktop, right-click
+        marks ✕ without switching tools.</li>
+        <li><strong>Drag</strong> across cells to paint a whole run in one stroke.</li>
+        <li>Clues turn pale when their line is complete.</li>
+      </ul>
+
+      <h2>Solving strategies</h2>
+      <ol class="steps">
+        <li><strong>The overlap technique.</strong> Push a run as far left as possible, then as far
+        right as possible. Any cells the two positions share are filled in every legal arrangement —
+        fill them. A 7-clue in a 10-wide line always covers the middle 4 cells.</li>
+        <li><strong>Edge logic.</strong> Once a filled cell touches a wall (or an ✕), the run it
+        belongs to is anchored — count it out and ✕ the cell after it.</li>
+        <li><strong>Split lines with ✕s.</strong> Every ✕ divides a line into independent segments.
+        A segment too short for the next run can be ✕-ed entirely.</li>
+        <li><strong>Finish and close.</strong> When all of a line's runs are placed, ✕ every
+        remaining cell — those ✕s are new anchors for the crossing lines.</li>
+        <li><strong>Alternate directions.</strong> Sweep rows, then columns, then rows again. Each
+        pass feeds the next; our boards are generated so these passes alone always finish the job.</li>
+      </ol>
+
+      <h2>A worked example</h2>
+      <p>Take a 10-wide row with the clue <strong>"6 2"</strong>. The leftmost arrangement occupies
+      cells 1–6 and 8–9; the rightmost occupies 2–7 and 9–10. Comparing the two: cells 2–6 are filled
+      in both extremes of the six-run, and cell 9 in both extremes of the two-run — so six cells are
+      certain before you look at a single column. Now the columns crossing those cells have anchored
+      runs of their own, and the cascade begins.</p>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><strong>Guessing.</strong> You never need to — if you're stuck, re-scan for overlaps and
+        for lines that are nearly complete. There is always a next logical move.</li>
+        <li><strong>Forgetting the gap rule.</strong> "2 2" is not four in a row — runs must be
+        separated by at least one empty cell.</li>
+        <li><strong>Skipping the ✕s.</strong> Marking proven-empty cells is what turns one deduction
+        into a chain. Fill-only play stalls quickly on 10×10 and up.</li>
+        <li><strong>Reading clues out of order.</strong> The numbers are strictly left-to-right
+        (top-to-bottom for columns) — the first clue is the first run you meet.</li>
+      </ul>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq"><dl>
+        <dt>What's the difference between nonogram, Picross and picture cross?</dt>
+        <dd>Different names for the same public-domain puzzle type. "Picross" is Nintendo's series;
+        "griddlers" and "hanjie" are other common names.</dd>
+        <dt>Do I ever need to guess?</dt>
+        <dd>No — every board here is generated to be solvable line-by-line with pure logic, and each
+        has exactly one solution.</dd>
+        <dt>Is there a daily puzzle?</dt>
+        <dd>Yes — a shared 10×10 Daily Challenge with streaks, plus unlimited random boards in
+        5×5, 10×10 and 15×15. Free, no login.</dd>
+      </dl></div>
+
+      <p style="margin-top:20px;"><a class="cta" href="play.html">Try it now <svg viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"><path d="M9 5l7 7-7 7"/></svg></a></p>
+    </article>
+
+    <!-- AD SLOT -->
+    <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Nonogram — a <a href="../">Funduk Games</a> puzzle ·
+       <a href="index.html">Home</a> · <a href="play.html">Play</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a> · <a href="https://www.patreon.com/Funduk" target="_blank" rel="noopener">Patreon</a></p>
+    <p class="disclaimer">
+      Nonogram is an independent puzzle game and is not affiliated with, endorsed by, or sponsored
+      by Nintendo or any other puzzle publisher. Trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
