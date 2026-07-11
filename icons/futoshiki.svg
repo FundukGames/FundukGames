@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0763d"></stop><stop offset="1" stop-color="#b04a24"></stop></linearGradient></defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)"></rect>
+  <rect x="12" y="12" width="17" height="17" rx="4" fill="#ffffff"></rect>
+  <rect x="35" y="12" width="17" height="17" rx="4" fill="#ffce3a"></rect>
+  <rect x="12" y="35" width="17" height="17" rx="4" fill="#ffce3a"></rect>
+  <rect x="35" y="35" width="17" height="17" rx="4" fill="#ffffff"></rect>
+  <g font-family="Arial, sans-serif" font-weight="800" text-anchor="middle" fill="#8a3a1a">
+    <text x="20.5" y="25.5" font-size="14">2</text>
+    <text x="43.5" y="25.5" font-size="14">4</text>
+    <text x="20.5" y="48.5" font-size="14">3</text>
+    <text x="43.5" y="48.5" font-size="14">1</text>
+  </g>
+  <path d="M31 17.5l-4 3 4 3" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" transform="translate(3 0)"></path>
+  <path d="M40.5 31l3 4-3 4" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -1) rotate(90 43.5 35)"></path>
+</svg>

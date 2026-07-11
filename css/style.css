@@ -632,3 +632,40 @@ article.section a:hover { color: #f8e0a8; }
 .hs-island.flash circle { stroke: var(--accent-2); stroke-width: 3.4; }
 .hs-board.is-won .hs-hit { cursor: default; }
 .hs-board.is-won .hs-bridge { stroke: var(--accent-deep); }
+
+/* ───────────────────────── Futoshiki (inequality latin square) ───────────────────────── */
+.fu-board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--n, 5), 1fr);
+  grid-template-rows: repeat(var(--n, 5), 1fr);
+  gap: 10px; /* signs live in the gutters */
+  aspect-ratio: 1 / 1; width: 100%; max-width: 420px; margin: 0 auto 12px;
+  touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.fu-cell {
+  border: 0; margin: 0; padding: 0; min-width: 0; min-height: 0;
+  border-radius: 10px; background: var(--chip);
+  box-shadow: inset 0 0 0 1px rgba(34, 48, 31, .08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(18px, 6vw, 30px); font-weight: 700; color: var(--accent-deep);
+  cursor: pointer; transition: transform .05s ease;
+}
+.fu-cell:active { transform: scale(.95); }
+.fu-cell.is-given { background: var(--chip-deep); color: var(--ink); font-weight: 800; cursor: default; }
+.fu-cell.is-peer { background: #e3ead2; }
+.fu-cell.is-same { background: #f2dfa8; }
+.fu-cell.is-sel, .fu-cell.is-sel.is-given { background: var(--accent); color: var(--accent-ink); outline: 3px solid var(--accent-deep); outline-offset: -3px; }
+.fu-cell.is-bad { box-shadow: inset 0 0 0 3px #d94f3d; }
+.fu-cell.flash { box-shadow: inset 0 0 0 3px var(--accent-2); }
+.fu-edge {
+  position: absolute; width: 18px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink); font-weight: 800; font-size: 19px; line-height: 1;
+  transform: translate(-50%, -54%); pointer-events: none; z-index: 5;
+}
+.fu-edge--v { transform: translate(-50%, -54%) rotate(90deg); }
+.fu-pad { display: grid; grid-template-columns: repeat(var(--cols, 6), 1fr); gap: 6px; max-width: 420px; margin: 0 auto 8px; }
+.fu-pad button { border: 0; border-radius: 10px; background: var(--chip); color: var(--ink); font-size: 1.2rem;
+  font-weight: 700; padding: 12px 0; cursor: pointer; min-height: 44px; }
+.fu-pad button:hover { background: var(--chip-hover); }

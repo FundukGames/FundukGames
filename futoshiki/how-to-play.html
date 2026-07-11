@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>How to Play Futoshiki — Rules, Tips &amp; Strategy</title>
+  <meta name="description" content="How to play Futoshiki: reading the inequality signs, chain logic, extreme-value scanning and the habits that solve 5×5 to 7×7 boards without guessing." />
+  <meta name="theme-color" content="#101a15" />
+  <link rel="canonical" href="https://fundukgames.com/futoshiki/how-to-play.html" />
+  <meta property="og:image" content="https://fundukgames.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="crown"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.6" y="2.6" width="8.4" height="8.4" rx="2.2" fill="#f0bc55"/><rect x="13" y="13" width="8.4" height="8.4" rx="2.2" fill="#2f6a49"/><path d="M14 5.5l4.5 1.7-4.5 1.7M9.9 14.2l-4.5 1.7 4.5 1.7" stroke="#e9f1e8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span> Futoshiki</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="play.html">Play</a>
+      <a href="how-to-play.html">How to play</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>How to play Futoshiki</h1>
+      <p>Futoshiki gives you almost no numbers — just a web of ‹ and › signs. Reading what those
+      signs imply about the extremes is the whole art. Here are the rules and the techniques.</p>
+
+      <h2>The rules</h2>
+      <ul>
+        <li>Fill the N×N grid so each <strong>row</strong> and <strong>column</strong> contains the
+        numbers <strong>1 to N exactly once</strong> (like Sudoku without boxes).</li>
+        <li>Every <strong>inequality sign</strong> between two neighboring cells must hold. The
+        point of the sign aims at the <strong>smaller</strong> number.</li>
+        <li>Some cells may be given at the start (locked).</li>
+      </ul>
+
+      <h2>Controls</h2>
+      <ul>
+        <li><strong>Tap a cell</strong>, then a number on the pad. Tapping the same number again
+        erases it.</li>
+        <li>On desktop, the <strong>keyboard</strong> works: digits enter, Backspace erases, arrow
+        keys move around.</li>
+        <li>Rule-breaking cells outline in red if you pause; the selected cell highlights its row
+        and column.</li>
+      </ul>
+
+      <h2>Solving strategies</h2>
+      <ol class="steps">
+        <li><strong>Chase the chains.</strong> Signs chain into ladders: in a ‹ b ‹ c ‹ d, cell a is
+        at most N−3 and d at least 4. Long ladders often pin cells to a single value at once.</li>
+        <li><strong>Place the extremes.</strong> A 1 can never sit on the open (larger) side of a
+        sign; an N can never sit on the point side. Scan each row and column for the only legal
+        home of its 1 and its N — this move alone cracks most 5×5 boards.</li>
+        <li><strong>Shrink ranges.</strong> Think of each cell as a range. A cell that must be less
+        than a neighbor loses its top value; one that must be greater loses its bottom. Repeat and
+        ranges collapse to singletons.</li>
+        <li><strong>Use uniqueness.</strong> When only two cells in a row can hold a value, a single
+        adjacent sign usually rules one of them out.</li>
+        <li><strong>Cascade.</strong> Every number you place re-tightens all four neighboring signs.
+        Re-scan around each entry before moving on.</li>
+      </ol>
+
+      <h2>A worked example</h2>
+      <p>A 5×5 row shows a ‹ b ‹ c with no numbers. From the chain, a ≤ 3, b is 2–4, and c ≥ 3. Now
+      suppose the column tells us c can't be 5 (the 5 is already placed there) — then c is 3 or 4.
+      If c were 3, the chain would force b = 2 and a = 1; a's column already has a 1, contradiction —
+      so c = 4, b is 2 or 3, and a shrinks to 1 or 2. One more sign anywhere in that neighborhood
+      settles all three. That's Futoshiki: ranges narrowing until only the truth is left.</p>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><strong>Misreading the sign.</strong> The point always aims at the smaller number —
+        vertical signs included (the point can aim up or down).</li>
+        <li><strong>Ignoring un-signed cells.</strong> Row and column uniqueness applies everywhere,
+        not just where signs are.</li>
+        <li><strong>Forgetting the extremes.</strong> If you're stuck, ask "where can the 1 go in
+        this row? where can the N?" — the answer is usually forced.</li>
+        <li><strong>Guessing.</strong> Never needed: every board has a logical next step and exactly
+        one solution.</li>
+      </ul>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq"><dl>
+        <dt>What does "Futoshiki" mean?</dt>
+        <dd>Japanese for "not equal" — the puzzle is also published as "More or Less" or
+        "Unequal".</dd>
+        <dt>Do I ever need to guess?</dt>
+        <dd>No — every board here is generated to be solvable by deduction alone with exactly one
+        solution.</dd>
+        <dt>Is there a daily puzzle?</dt>
+        <dd>Yes — a shared 5×5 Daily Challenge with streaks, plus unlimited boards in 5×5, 6×6 and
+        7×7. Free, no login.</dd>
+      </dl></div>
+
+      <p style="margin-top:20px;"><a class="cta" href="play.html">Try it now <svg viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"><path d="M9 5l7 7-7 7"/></svg></a></p>
+    </article>
+
+    <!-- AD SLOT -->
+    <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Futoshiki — a <a href="../">Funduk Games</a> puzzle ·
+       <a href="index.html">Home</a> · <a href="play.html">Play</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a> · <a href="https://www.patreon.com/Funduk" target="_blank" rel="noopener">Patreon</a></p>
+    <p class="disclaimer">
+      Futoshiki is an independent implementation of the classic public-domain inequality puzzle and
+      is not affiliated with any other puzzle publisher. Trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
