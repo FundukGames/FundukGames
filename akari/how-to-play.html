@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>How to Play Akari (Light Up) — Rules, Tips &amp; Strategy</title>
+  <meta name="description" content="How to play Akari / Light Up: bulb placement rules, the 0-4 wall numbers, corner logic, dot notation and the deduction chains that solve every board without guessing." />
+  <meta name="theme-color" content="#101a15" />
+  <link rel="canonical" href="https://fundukgames.com/akari/how-to-play.html" />
+  <meta property="og:image" content="https://fundukgames.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="crown"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="10" r="5.5" fill="#f0bc55"/><path d="M12 1.6v1.8M3.5 10H1.7M22.3 10h-1.8M5.5 3.5l1.3 1.3M18.5 3.5l-1.3 1.3" stroke="#f0bc55" stroke-width="1.7" stroke-linecap="round" fill="none"/><path d="M10 17.5h4M10.5 20h3" stroke="#2f6a49" stroke-width="2" stroke-linecap="round" fill="none"/></svg></span> Akari</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="play.html">Play</a>
+      <a href="how-to-play.html">How to play</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>How to play Akari</h1>
+      <p>Akari (Light Up) hands you a dark grid and a box of bulbs. The wall numbers and the
+      no-shine rule pin down every placement — here's how to read them.</p>
+
+      <h2>The rules</h2>
+      <ul>
+        <li>Place bulbs on white cells. A bulb lights its <strong>row and column</strong> until a
+        wall blocks the beam.</li>
+        <li><strong>Every white cell must end up lit.</strong></li>
+        <li><strong>No bulb may be lit by another bulb</strong> — bulbs never see each other.</li>
+        <li>A <strong>numbered wall (0–4)</strong> must touch exactly that many bulbs, counting only
+        the four orthogonal neighbors.</li>
+        <li>Unnumbered walls are just obstacles.</li>
+      </ul>
+
+      <h2>Controls</h2>
+      <ul>
+        <li>Tap an empty cell → <strong>💡 bulb</strong>. Tap again → <strong>· dot</strong> ("no
+        bulb here"). A third tap clears.</li>
+        <li>Lit cells tint amber so you always see your coverage; the counter tracks lit cells.</li>
+        <li>Rule-breaking bulbs and impossible numbers outline in red if you pause.</li>
+      </ul>
+
+      <h2>Solving strategies</h2>
+      <ol class="steps">
+        <li><strong>Zeros first.</strong> A 0 wall means no bulbs on any side — dot all its
+        neighbors. Those dots often squeeze nearby numbers.</li>
+        <li><strong>Full-count walls.</strong> If a number equals its free neighbors (a 4, a 3 on an
+        edge, a 2 in a corner), all of them are bulbs.</li>
+        <li><strong>Satisfied walls dot the rest.</strong> Once a number has its bulbs, dot its other
+        neighbors.</li>
+        <li><strong>The lonely-cell rule.</strong> Take an unlit cell and list every place a bulb
+        could light it from (including itself). If only one candidate remains, it's a bulb. This is
+        the deduction that finishes most boards.</li>
+        <li><strong>Diagonal squeeze.</strong> Two diagonal 1-walls sharing two candidate cells
+        can't both use the shared pair — the outer cells get dots. Rare but elegant.</li>
+      </ol>
+
+      <h2>A worked example</h2>
+      <p>A "3" sits against the top edge, so it has at most three free neighbors — all three are
+      bulbs immediately. Each new bulb beams light down its column, dotting every cell it sees. A
+      neighboring "1" that now touches one of those bulbs is satisfied, so its remaining neighbors
+      get dots too. One of those dotted cells was the last candidate for lighting a far corner cell
+      — so that corner cell must hold its own bulb. Three rules, four placements, and the whole
+      region is done.</p>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><strong>Placing bulbs in sight of each other.</strong> Check the full row and column
+        before you tap — beams travel until a wall, however far that is.</li>
+        <li><strong>Treating numbers as minimums.</strong> They're exact: a 1 with two adjacent
+        bulbs is broken.</li>
+        <li><strong>Skipping the dots.</strong> Dots are how deductions chain. If you only place
+        bulbs, the lonely-cell rule is invisible.</li>
+        <li><strong>Forgetting diagonals don't count.</strong> Wall numbers only look up, down, left
+        and right.</li>
+      </ul>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq"><dl>
+        <dt>What does "Akari" mean?</dt>
+        <dd>"Light" in Japanese — the puzzle is also known as Light Up and first appeared in Japanese
+        puzzle magazines.</dd>
+        <dt>Do I ever need to guess?</dt>
+        <dd>No — every board here is generated to be solvable by pure step-by-step logic with
+        exactly one solution.</dd>
+        <dt>Is there a daily puzzle?</dt>
+        <dd>Yes — a shared 10×10 Daily Challenge with streaks, plus unlimited boards in 7×7 and
+        10×10. Free, no login.</dd>
+      </dl></div>
+
+      <p style="margin-top:20px;"><a class="cta" href="play.html">Try it now <svg viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"><path d="M9 5l7 7-7 7"/></svg></a></p>
+    </article>
+
+    <!-- AD SLOT -->
+    <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Akari — a <a href="../">Funduk Games</a> puzzle ·
+       <a href="index.html">Home</a> · <a href="play.html">Play</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a> · <a href="https://www.patreon.com/Funduk" target="_blank" rel="noopener">Patreon</a></p>
+    <p class="disclaimer">
+      Akari is an independent implementation of the classic "Light Up" logic puzzle and is not
+      affiliated with, endorsed by, or sponsored by Nikoli Co., Ltd. or any other puzzle publisher.
+      Trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

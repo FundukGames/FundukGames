@@ -582,3 +582,34 @@ article.section a:hover { color: #f8e0a8; }
 .pp-board.is-won .pp-cell { cursor: default; background: #f4ead2; }
 .pp-board.is-won .pp-cell.is-src svg { animation: ppwin .6s ease; }
 @keyframes ppwin { 0%,100% { scale: 1; } 50% { scale: 1.25; } }
+
+/* ───────────────────────── Akari (Light Up puzzle) ───────────────────────── */
+.ak-board {
+  display: grid; grid-template-columns: repeat(var(--n, 10), 1fr); grid-template-rows: repeat(var(--n, 10), 1fr);
+  gap: 1px; background: var(--board-line); border: 3px solid var(--board-line); border-radius: 10px;
+  overflow: hidden; aspect-ratio: 1 / 1; width: 100%; max-width: 460px; margin: 0 auto 12px;
+  touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.ak-cell {
+  border: 0; margin: 0; padding: 0; min-width: 0; min-height: 0;
+  background: #fdfef9; cursor: pointer; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: clamp(13px, 4vw, 22px);
+  transition: background-color .15s ease;
+}
+.ak-cell.is-lit { background: #faeec9; }
+.ak-wall { background: #3a4440; color: #fff; cursor: default; font-family: var(--font-head); }
+.ak-cell.is-bulb::before {
+  content: ""; width: 58%; height: 58%; border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fff2c0, #f0bc55 55%, #e0a63d);
+  box-shadow: 0 0 10px 2px rgba(240, 188, 85, .75);
+}
+.ak-cell.is-dot::before {
+  content: ""; width: 17%; height: 17%; border-radius: 50%;
+  background: #b9c4ae;
+}
+.ak-cell.is-bad { box-shadow: inset 0 0 0 3px #d94f3d; }
+.ak-wall.is-bad { box-shadow: inset 0 0 0 3px #d94f3d; color: #ffb3a8; }
+.ak-cell.flash { box-shadow: inset 0 0 0 3px var(--accent-2); }
+.ak-board.is-won .ak-cell { cursor: default; }
+.ak-board.is-won .ak-cell.is-dot::before { opacity: 0; transition: opacity .4s ease; }
