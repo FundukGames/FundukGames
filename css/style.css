@@ -524,3 +524,33 @@ article.section a:hover { color: #f8e0a8; }
   color: var(--ink-soft); cursor: pointer; min-height: 36px; display: inline-flex; align-items: center; gap: 7px; }
 .seg button.is-active { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(34, 48, 31, .2); }
 .seg .seg__swatch { width: 13px; height: 13px; border-radius: 3px; background: #33463a; }
+
+/* ───────────────────────── Minesweeper (no-guess) ───────────────────────── */
+.ms-board {
+  display: grid; grid-template-columns: repeat(var(--w, 16), 1fr); gap: 2px;
+  width: 100%; max-width: 520px; margin: 0 auto 12px;
+  touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.ms-board--wide { gap: 1px; } /* 24-wide hard board — tighter so cells stay tappable */
+.ms-cell {
+  aspect-ratio: 1 / 1; border: 0; margin: 0; padding: 0; min-width: 0; min-height: 0;
+  border-radius: 4px; background: var(--chip-deep);
+  box-shadow: inset 0 -2px 0 rgba(34, 48, 31, .14), inset 0 1px 0 rgba(255, 255, 255, .55);
+  cursor: pointer; font-weight: 800; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: clamp(9px, 2.4vw, 16px);
+}
+.ms-cell:active { filter: brightness(.95); }
+.ms-cell.is-revealed { background: #fdfef9; box-shadow: inset 0 0 0 1px #e6ebdc; cursor: default; }
+.ms-cell.is-flag { font-size: clamp(8px, 2.2vw, 14px); }
+.ms-cell.is-mine { background: #f3ded9; }
+.ms-cell.is-boom { background: #d94f3d; }
+.ms-cell.is-wrong { background: #f3ded9; box-shadow: inset 0 0 0 2px #d94f3d; }
+.ms-cell.flash { box-shadow: inset 0 0 0 3px var(--accent-2); }
+.ms-board.is-done .ms-cell { cursor: default; }
+/* classic number colors, tuned to the panel */
+.ms-cell.n1 { color: #2560a8; } .ms-cell.n2 { color: #2e7d4f; }
+.ms-cell.n3 { color: #c93a2e; } .ms-cell.n4 { color: #5d3fb0; }
+.ms-cell.n5 { color: #a8751a; } .ms-cell.n6 { color: #0b8a8a; }
+.ms-cell.n7 { color: #22301f; } .ms-cell.n8 { color: #6e8070; }
+.ms-count { font-variant-numeric: tabular-nums; font-weight: 700; background: var(--chip); border-radius: 10px; padding: 4px 12px; color: var(--ink); }

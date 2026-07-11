@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>Play Minesweeper — No-Guess Boards, Free &amp; Unlimited (No Login)</title>
+  <meta name="description" content="Play Minesweeper free: every board is solvable by pure logic — no 50/50 guesses, ever. Unlimited games, a Daily Challenge, no login, no sign-up." />
+  <meta name="theme-color" content="#101a15" />
+  <link rel="canonical" href="https://fundukgames.com/minesweeper/play.html" />
+  <meta property="og:image" content="https://fundukgames.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+  <meta property="og:title" content="Play Minesweeper — No-Guess Boards" />
+  <meta property="og:description" content="The Minesweeper that never makes you guess. Unlimited & free, no login." />
+  <meta property="og:type" content="website" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="crown"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="14" r="7" fill="#2f6a49"/><path d="M11 7V4.5" stroke="#2f6a49" stroke-width="2.4" stroke-linecap="round" fill="none"/><path d="M11 4.5l3.5-1.8" stroke="#f0bc55" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="8.6" cy="11.8" r="1.8" fill="#f8faf4" opacity=".85"/><path d="M18.5 6.5l2-2M19.5 10h2.3M16.5 3.5l.9-2.2" stroke="#f0bc55" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg></span> Minesweeper</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="play.html">Play</a>
+      <a href="how-to-play.html">How to play</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="game-card">
+      <div class="game-top">
+        <span id="mode-label">Medium · 16×16</span>
+        <span style="display:flex;gap:8px;">
+          <span class="ms-count" id="minecount">🚩 40</span>
+          <span class="timer" id="timer">0:00</span>
+        </span>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><b id="stat-solved">0</b><span>Cleared</span></div>
+        <div class="stat"><b id="stat-streak">0</b><span>Daily streak</span></div>
+        <div class="stat"><b id="stat-best">—</b><span>Best time</span></div>
+      </div>
+
+      <div id="board" class="ms-board" aria-label="Minefield"></div>
+      <div id="message" class="message"></div>
+
+      <div class="ng-tools">
+        <div class="seg" role="group" aria-label="Tap action">
+          <button type="button" id="tool-dig">⛏️ Dig</button>
+          <button type="button" id="tool-flag">🚩 Flag</button>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn--primary" id="btn-new"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v4h-4"/></svg>New game</button>
+        <button class="btn" id="btn-daily"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.8 6.3.8-4.6 4.3 1.2 6.1-5.6-3-5.6 3 1.2-6.1L3 9.6l6.3-.8z"/></svg>Daily</button>
+        <label class="size-wrap"><span>Level</span>
+          <select id="difficulty" aria-label="Difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </label>
+        <button class="btn" id="btn-hint"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 4 10.5c-.8.7-1 1.5-1 2.5h-6c0-1-.2-1.8-1-2.5A6 6 0 0 1 12 3z"/></svg>Hint</button>
+        <button class="btn" id="btn-share"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></svg>Share</button>
+      </div>
+    </section>
+
+    <p style="text-align:center;color:#c2c7ee;font-size:.92rem;">
+      Numbers count the mines in the 8 surrounding cells. <b>Right-click</b> or <b>long-press</b> to
+      flag; tap a satisfied number to open its remaining neighbors. Every board is solvable by
+      logic — <b>you never have to guess</b>.
+    </p>
+
+    <!-- AD SLOT: paste your Google AdSense responsive unit here after approval -->
+    <div class="ad-slot" id="ad-bottom">Ad space (728×90) — your AdSense unit goes here</div>
+
+    <div id="win-modal" class="modal" hidden>
+      <div class="modal__card">
+        <button class="modal__close" id="win-close" aria-label="Close">✕</button>
+        <h2 id="win-title">Cleared!</h2>
+        <p id="win-sub"></p>
+        <div class="modal__actions">
+          <button class="btn btn--primary" id="win-retry" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></svg>Try this board again</button>
+          <button class="btn btn--primary" id="win-new"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v4h-4"/></svg>New game</button>
+          <a class="btn" href="../nonogram/play.html">Try Nonogram →</a>
+          <button class="btn" id="win-share"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></svg>Share result</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Minesweeper — a <a href="../">Funduk Games</a> puzzle ·
+       <a href="index.html">Home</a> · <a href="how-to-play.html">How to play</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a> · <a href="https://www.patreon.com/Funduk" target="_blank" rel="noopener">Patreon</a></p>
+    <p class="disclaimer">
+      This is an independent implementation of the classic public-domain minesweeper puzzle. It is
+      not affiliated with, endorsed by, or sponsored by Microsoft Corporation or any other
+      publisher. All trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <script src="js/generator.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

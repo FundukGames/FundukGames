@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>How to Play Minesweeper — Rules, Patterns &amp; No-Guess Strategy</title>
+  <meta name="description" content="How to play Minesweeper: reading the numbers, flagging, chording, the 1-1 and 1-2 patterns, and endgame mine counting — everything you need to clear boards with pure logic." />
+  <meta name="theme-color" content="#101a15" />
+  <link rel="canonical" href="https://fundukgames.com/minesweeper/how-to-play.html" />
+  <meta property="og:image" content="https://fundukgames.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="crown"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="14" r="7" fill="#2f6a49"/><path d="M11 7V4.5" stroke="#2f6a49" stroke-width="2.4" stroke-linecap="round" fill="none"/><path d="M11 4.5l3.5-1.8" stroke="#f0bc55" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="8.6" cy="11.8" r="1.8" fill="#f8faf4" opacity=".85"/><path d="M18.5 6.5l2-2M19.5 10h2.3M16.5 3.5l.9-2.2" stroke="#f0bc55" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg></span> Minesweeper</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="play.html">Play</a>
+      <a href="how-to-play.html">How to play</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>How to play Minesweeper</h1>
+      <p>Minesweeper is a deduction game: the numbers tell you exactly where the mines are — if you
+      know how to listen. Here are the rules, the controls, and the patterns that clear boards
+      without a single guess.</p>
+
+      <h2>The rules</h2>
+      <ul>
+        <li>The board hides a fixed number of <strong>mines</strong> (shown by the 🚩 counter).</li>
+        <li>Digging a safe cell reveals a <strong>number</strong>: how many mines sit in its 8
+        surrounding cells. Blank cells have zero and open their whole neighborhood.</li>
+        <li>Digging a mine ends the game — though here you can always retry the same board.</li>
+        <li>You win by revealing <strong>every safe cell</strong>. Flagging mines is optional but
+        makes deduction much easier.</li>
+      </ul>
+
+      <h2>Controls</h2>
+      <ul>
+        <li><strong>Tap / click</strong> digs a cell. Your first dig is always safe.</li>
+        <li><strong>Right-click</strong> (desktop) or <strong>long-press</strong> (touch) plants a
+        flag. Or switch to the 🚩 Flag tool and tap.</li>
+        <li><strong>Chording:</strong> tap a revealed number that already has all its flags placed —
+        its remaining neighbors open at once. This is the biggest speed-up in the game.</li>
+      </ul>
+
+      <h2>Core deductions</h2>
+      <ol class="steps">
+        <li><strong>Tight fit → all mines.</strong> If a number equals its count of covered
+        neighbors, every one of them is a mine. Flag them.</li>
+        <li><strong>Satisfied → all safe.</strong> If a number already touches that many flags, every
+        other neighbor is safe. Chord it.</li>
+        <li><strong>The 1-1 pattern.</strong> Two 1s side by side against a wall of covered cells:
+        the first 1's mine must be in the cells it shares with the second — so any cell the second
+        sees beyond the shared ones is safe.</li>
+        <li><strong>The 1-2 pattern.</strong> A 1 and a 2 side by side along an edge: the 2 needs two
+        mines but shares at most one with the 1 — the far cell of the 2 is always a mine.</li>
+        <li><strong>Endgame counting.</strong> When the 🚩 counter equals the number of covered
+        cells, they're all mines; when it reads 0, everything left is safe.</li>
+      </ol>
+
+      <h2>A worked example</h2>
+      <p>Suppose a revealed "2" touches exactly two covered cells — both are mines, flag them. A
+      neighboring "3" touches those two flags plus one more covered cell: 3 − 2 = 1, so that last
+      cell is also a mine. A "1" behind it now touches a flagged mine, so all of its other covered
+      neighbors are safe — chord it and the board opens up. Chains like this are the whole game:
+      every flag you prove feeds the next number.</p>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><strong>Guessing early.</strong> On these boards there is always a logical move — if
+        you're stuck, scan for tight fits and satisfied numbers you've missed, or use a Hint.</li>
+        <li><strong>Over-flagging.</strong> A wrong flag poisons every number that touches it and
+        leads to false "satisfied" chords. Only flag what you've proven.</li>
+        <li><strong>Ignoring the mine counter.</strong> In the endgame the global count often
+        finishes the board when local numbers can't.</li>
+        <li><strong>Forgetting diagonals.</strong> Numbers count all 8 neighbors — corner-to-corner
+        contacts included.</li>
+      </ul>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq"><dl>
+        <dt>Is it really never necessary to guess?</dt>
+        <dd>Correct. Every board is verified by a logic solver before you see it; if the solver
+        would have to guess, mines are moved until logic alone clears the board.</dd>
+        <dt>What happens if I hit a mine?</dt>
+        <dd>Game over — but you can retry the exact same board immediately. Since the board is
+        solvable by logic, a loss is always a lesson, not bad luck.</dd>
+        <dt>Is there a daily puzzle?</dt>
+        <dd>Yes — a shared 16×16 daily board with streaks, plus unlimited random boards at three
+        difficulty levels. Free, no login.</dd>
+      </dl></div>
+
+      <p style="margin-top:20px;"><a class="cta" href="play.html">Try it now <svg viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"><path d="M9 5l7 7-7 7"/></svg></a></p>
+    </article>
+
+    <!-- AD SLOT -->
+    <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Minesweeper — a <a href="../">Funduk Games</a> puzzle ·
+       <a href="index.html">Home</a> · <a href="play.html">Play</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a> · <a href="https://www.patreon.com/Funduk" target="_blank" rel="noopener">Patreon</a></p>
+    <p class="disclaimer">
+      This is an independent implementation of the classic public-domain minesweeper puzzle and is
+      not affiliated with, endorsed by, or sponsored by Microsoft Corporation or any other
+      publisher. Trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
