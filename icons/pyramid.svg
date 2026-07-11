@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f7f5c"></stop><stop offset="1" stop-color="#245c3e"></stop></linearGradient></defs>
+  <rect width="64" height="64" rx="14" fill="url(#g)"></rect>
+  <g>
+    <rect x="26" y="10" width="12" height="16" rx="2" fill="#ffffff" stroke="#245c3e" stroke-width="1"></rect>
+    <rect x="18" y="24" width="12" height="16" rx="2" fill="#ffffff" stroke="#245c3e" stroke-width="1"></rect>
+    <rect x="34" y="24" width="12" height="16" rx="2" fill="#ffffff" stroke="#245c3e" stroke-width="1"></rect>
+    <rect x="10" y="38" width="12" height="16" rx="2" fill="#ffce3a" stroke="#245c3e" stroke-width="1"></rect>
+    <rect x="26" y="38" width="12" height="16" rx="2" fill="#ffffff" stroke="#245c3e" stroke-width="1"></rect>
+    <rect x="42" y="38" width="12" height="16" rx="2" fill="#ffce3a" stroke="#245c3e" stroke-width="1"></rect>
+  </g>
+  <g font-family="Arial, sans-serif" font-weight="800" text-anchor="middle">
+    <text x="16" y="50" font-size="10" fill="#b03226">6</text>
+    <text x="48" y="50" font-size="10" fill="#16181c">7</text>
+  </g>
+</svg>

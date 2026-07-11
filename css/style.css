@@ -669,3 +669,13 @@ article.section a:hover { color: #f8e0a8; }
 .fu-pad button { border: 0; border-radius: 10px; background: var(--chip); color: var(--ink); font-size: 1.2rem;
   font-weight: 700; padding: 12px 0; cursor: pointer; min-height: 44px; }
 .fu-pad button:hover { background: var(--chip-hover); }
+
+/* ───────────────────────── Pyramid / TriPeaks (pairing solitaires) ───────────────────────── */
+.pyr-board { position: relative; }
+.pyr-board .sol-card { position: absolute; cursor: pointer; }
+.pyr-board .sol-card.pyr-locked { cursor: default; }
+.pyr-board .sol-card.pyr-locked::after { content: ""; position: absolute; inset: 0; background: rgba(20, 40, 28, .38); border-radius: 4px; }
+.pyr-board .sol-card.pyr-sel { outline: 3px solid var(--accent-bright); outline-offset: 1px; box-shadow: 0 4px 14px rgba(0, 0, 0, .4); }
+.pyr-board .sol-slot { position: absolute; }
+.pyr-board .pyr-dim { opacity: .8; cursor: default; }
+.pyr-count { position: absolute; transform: translateX(-50%); color: rgba(255, 255, 255, .78); font-size: .72rem; font-weight: 700; white-space: nowrap; z-index: 8; }
