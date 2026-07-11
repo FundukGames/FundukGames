@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>How to Play Pipes — Rules, Tips &amp; Strategy (Net Puzzle)</title>
+  <meta name="description" content="How to play the Pipes (Net) rotation puzzle: edge logic, lamp anchoring, the no-loops rule, and the habits that connect every network without guessing." />
+  <meta name="theme-color" content="#101a15" />
+  <link rel="canonical" href="https://fundukgames.com/pipes/how-to-play.html" />
+  <meta property="og:image" content="https://fundukgames.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="crown"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v9a4 4 0 0 0 4 4h9" fill="none" stroke="#f0bc55" stroke-width="3.4" stroke-linecap="round"/><circle cx="5" cy="3.5" r="2.4" fill="#2f6a49"/><circle cx="18.5" cy="16" r="3.2" fill="#f0bc55"/><circle cx="18.5" cy="16" r="1.4" fill="#fff"/></svg></span> Pipes</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="play.html">Play</a>
+      <a href="how-to-play.html">How to play</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>How to play Pipes</h1>
+      <p>Pipes looks like fidgeting, but it's pure deduction: the walls, corners and lamps pin the
+      network down one piece at a time. Here are the rules and the techniques.</p>
+
+      <h2>The rules</h2>
+      <ul>
+        <li>Every cell holds a pipe piece: a <strong>lamp</strong> (one end), a <strong>straight</strong>
+        or <strong>elbow</strong> (two ends), a <strong>T-junction</strong> (three), or a
+        <strong>cross</strong> (four).</li>
+        <li>Tap to rotate a piece 90° clockwise; right-click or long-press rotates the other way.</li>
+        <li>Two pieces are connected when their ends <strong>point at each other</strong>.</li>
+        <li>The board is solved when <strong>every piece is lit</strong> from the central source and
+        <strong>no end is left open</strong> — pointing at a wall or at the side of another pipe.</li>
+      </ul>
+
+      <h2>Solving strategies</h2>
+      <ol class="steps">
+        <li><strong>Edges first.</strong> No end may point off the board. A straight piece on the
+        border must run parallel to it; a T-junction on the border must face inward; an elbow in a
+        corner has exactly one legal orientation.</li>
+        <li><strong>Lamps lock their neighbors.</strong> A lamp connects one way only. Once you know
+        which neighbor feeds it, that neighbor must offer an end in return — and its other ends are
+        then constrained too.</li>
+        <li><strong>Count ends between neighbors.</strong> If a piece has all its ends accounted for,
+        every adjacent piece must turn its ends <em>away</em> from it — that's how deductions travel
+        across the board.</li>
+        <li><strong>No loops.</strong> The solved network is a tree. If two lit branches would join
+        into a ring, one of those pieces is misrotated.</li>
+        <li><strong>Watch the flow.</strong> The amber glow is a progress meter: a grey island means
+        its link to the source is still wrong somewhere along the boundary.</li>
+      </ol>
+
+      <h2>A worked example</h2>
+      <p>Take a corner cell holding an elbow: only one rotation keeps both its ends on the board, so
+      it's forced immediately. Suppose its end points at a border straight — the straight must run
+      along the wall, and now its far end pushes into a T-junction on the same wall. A border
+      T-junction must face inward, and with one of its three ends already fed by the straight, only
+      one rotation remains. Three pieces placed without touching the middle of the board — that
+      cascade is the whole game.</p>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><strong>Spinning instead of reasoning.</strong> Random taps light some pieces by luck but
+        stall on the interior. Anchor edges and lamps first — the middle solves itself.</li>
+        <li><strong>Leaving micro-leaks.</strong> "Everything is lit" isn't enough — a single end
+        pointing at a wall keeps the board unsolved. The lit counter tells you coverage; scan for
+        open ends when it reads full.</li>
+        <li><strong>Building rings.</strong> If a rotation connects two already-lit pipes, you've
+        made a loop — the real solution never has one.</li>
+      </ul>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq"><dl>
+        <dt>What kind of puzzle is Pipes?</dt>
+        <dd>A rotation-logic puzzle from the classic "Net" family: connect all cells into a single
+        leak-free network — a spanning tree of the grid.</dd>
+        <dt>Do I ever need to guess?</dt>
+        <dd>No — every board is generated with exactly one solution and is deducible from the
+        borders, lamps and junction constraints.</dd>
+        <dt>Is there a daily puzzle?</dt>
+        <dd>Yes — a shared 7×7 Daily Challenge with streaks, plus unlimited boards in 5×5, 7×7 and
+        9×9. Free, no login.</dd>
+      </dl></div>
+
+      <p style="margin-top:20px;"><a class="cta" href="play.html">Try it now <svg viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"><path d="M9 5l7 7-7 7"/></svg></a></p>
+    </article>
+
+    <!-- AD SLOT -->
+    <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Pipes — a <a href="../">Funduk Games</a> puzzle ·
+       <a href="index.html">Home</a> · <a href="play.html">Play</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a> · <a href="https://www.patreon.com/Funduk" target="_blank" rel="noopener">Patreon</a></p>
+    <p class="disclaimer">
+      Pipes is an independent puzzle game and is not affiliated with, endorsed by, or sponsored by
+      any other puzzle publisher. Trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
