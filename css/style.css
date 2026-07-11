@@ -679,3 +679,28 @@ article.section a:hover { color: #f8e0a8; }
 .pyr-board .sol-slot { position: absolute; }
 .pyr-board .pyr-dim { opacity: .8; cursor: default; }
 .pyr-count { position: absolute; transform: translateX(-50%); color: rgba(255, 255, 255, .78); font-size: .72rem; font-weight: 700; white-space: nowrap; z-index: 8; }
+
+/* ───────────────────────── Mahjong Solitaire ───────────────────────── */
+.mj-board { position: relative; }
+.mj-tile {
+  position: absolute; border: 0; margin: 0; padding: 0;
+  background: linear-gradient(160deg, #fefdf6, #f0eddb);
+  border-radius: 4px; cursor: pointer;
+  box-shadow: 2px 3px 0 #c9c3a4, 3px 4px 5px rgba(0, 0, 0, .4), inset 0 0 0 1px rgba(140, 130, 90, .35);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1px; line-height: 1; font-weight: 800; color: #22301f;
+  user-select: none; -webkit-user-select: none;
+}
+.mj-tile b { font-size: 1.15em; }
+.mj-suit { font-size: .92em; }
+.mj-big { font-size: 1.35em; }
+.mj-dot { color: #2560a8; }
+.mj-bam { color: #2e7d4f; }
+.mj-chr { color: #c93a2e; }
+.mj-wind { color: #33414f; }
+.mj-blank { color: #9aa79b; }
+.mj-tile.mj-locked { cursor: default; }
+.mj-tile.mj-locked::after { content: ""; position: absolute; inset: 0; border-radius: 4px; background: rgba(40, 60, 46, .22); }
+.mj-tile.mj-sel { outline: 3px solid var(--accent-bright); outline-offset: 1px; filter: brightness(1.05); }
+.mj-tile.mj-hint { outline: 3px solid var(--accent-2); outline-offset: 1px; }
+.mj-tile.mj-shake { animation: shake .25s; }
