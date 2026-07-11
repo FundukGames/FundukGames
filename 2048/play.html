@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>Play 2048 — Free Number Merge Game (Unlimited + Daily, No Login)</title>
+  <meta name="description" content="Play 2048 free: slide and merge tiles to build the 2048 tile. Smooth animations, undo, a seeded Daily run everyone shares. No login, no download." />
+  <meta name="theme-color" content="#101a15" />
+  <link rel="canonical" href="https://fundukgames.com/2048/play.html" />
+  <meta property="og:image" content="https://fundukgames.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+  <meta property="og:title" content="Play 2048 — Free Number Merge Game" />
+  <meta property="og:description" content="Slide, merge, chase the golden tile. Free, no login." />
+  <meta property="og:type" content="website" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="crown"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="2.5" width="9" height="9" rx="2.4" fill="#2f6a49"/><rect x="12.5" y="2.5" width="9" height="9" rx="2.4" fill="#f0bc55"/><rect x="2.5" y="12.5" width="9" height="9" rx="2.4" fill="#f0bc55"/><rect x="12.5" y="12.5" width="9" height="9" rx="2.4" fill="#fdfdf4"/></svg></span> 2048</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="play.html">Play</a>
+      <a href="how-to-play.html">How to play</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="game-card">
+      <div class="game-top">
+        <span id="mode-label">Unlimited</span>
+        <span class="g2-score">⭐ <span id="score">0</span></span>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><b id="stat-best">0</b><span>Best score</span></div>
+        <div class="stat"><b id="stat-streak">0</b><span>Daily streak</span></div>
+        <div class="stat"><b id="stat-tile">—</b><span>Best tile</span></div>
+      </div>
+
+      <div id="board" class="g2-board" aria-label="2048 board"></div>
+      <div id="message" class="message"></div>
+
+      <div class="controls">
+        <button class="btn btn--primary" id="btn-new"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v4h-4"/></svg>New game</button>
+        <button class="btn" id="btn-daily"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.7 5.8 6.3.8-4.6 4.3 1.2 6.1-5.6-3-5.6 3 1.2-6.1L3 9.6l6.3-.8z"/></svg>Daily</button>
+        <button class="btn" id="btn-undo" disabled>↶ Undo</button>
+        <button class="btn" id="btn-share"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></svg>Share</button>
+      </div>
+    </section>
+
+    <p style="text-align:center;color:#c2c7ee;font-size:.92rem;">
+      <b>Swipe</b> (or use <b>arrow keys / WASD</b>) to slide all tiles. Equal tiles merge on
+      contact; every move spawns a new one. Reach <b>2048</b> — then keep going. The Daily run gives
+      everyone the same tile sequence; hit <b>1024</b> to keep your streak.
+    </p>
+
+    <!-- AD SLOT: paste your Google AdSense responsive unit here after approval -->
+    <div class="ad-slot" id="ad-bottom">Ad space (728×90) — your AdSense unit goes here</div>
+
+    <div id="win-modal" class="modal" hidden>
+      <div class="modal__card">
+        <button class="modal__close" id="win-close" aria-label="Close">✕</button>
+        <h2 id="win-title">2048!</h2>
+        <p id="win-sub"></p>
+        <div class="modal__actions">
+          <button class="btn btn--primary" id="win-continue" hidden>Keep going →</button>
+          <button class="btn btn--primary" id="win-new"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v4h-4"/></svg>New game</button>
+          <a class="btn" href="../nutfall/play.html">Try Nutfall →</a>
+          <button class="btn" id="win-share"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></svg>Share result</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> 2048 — a <a href="../">Funduk Games</a> game ·
+       <a href="index.html">Home</a> · <a href="how-to-play.html">How to play</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a> · <a href="https://www.patreon.com/Funduk" target="_blank" rel="noopener">Patreon</a></p>
+    <p class="disclaimer">
+      This is an independent implementation of the 2048 sliding-tile game, a public mechanic
+      popularized by Gabriele Cirulli's open-source original. Not affiliated with any other
+      publisher. All trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+  <script src="js/game.js"></script>
+</body>
+</html>

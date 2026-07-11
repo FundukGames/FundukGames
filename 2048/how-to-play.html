@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>How to Play 2048 — Rules, Corner Strategy &amp; Tips</title>
+  <meta name="description" content="How to play 2048: the sliding and merging rules, the corner strategy, snake building, and the habits that get you past 1024 consistently." />
+  <meta name="theme-color" content="#101a15" />
+  <link rel="canonical" href="https://fundukgames.com/2048/how-to-play.html" />
+  <meta property="og:image" content="https://fundukgames.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="crown"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="2.5" width="9" height="9" rx="2.4" fill="#2f6a49"/><rect x="12.5" y="2.5" width="9" height="9" rx="2.4" fill="#f0bc55"/><rect x="2.5" y="12.5" width="9" height="9" rx="2.4" fill="#f0bc55"/><rect x="12.5" y="12.5" width="9" height="9" rx="2.4" fill="#fdfdf4"/></svg></span> 2048</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="play.html">Play</a>
+      <a href="how-to-play.html">How to play</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>How to play 2048</h1>
+      <p>Anyone can swipe; reaching 2048 takes discipline. Here are the rules and the strategy that
+      turns random merging into a repeatable climb.</p>
+
+      <h2>The rules</h2>
+      <ul>
+        <li>Every swipe slides <strong>all</strong> tiles as far as they can go in that direction.</li>
+        <li>Two tiles with the <strong>same value merge</strong> into one tile of double the value
+        when they collide.</li>
+        <li>A tile can only take part in <strong>one merge per move</strong> — a row of 2-2-2-2
+        becomes 4-4, not 8.</li>
+        <li>After each move, a new tile appears in a random empty cell: <strong>2</strong> (90%) or
+        <strong>4</strong> (10%).</li>
+        <li>When no swipe can change the board, the game ends. <strong>2048</strong> is the classic
+        goal — the game continues past it.</li>
+      </ul>
+
+      <h2>Controls</h2>
+      <ul>
+        <li><strong>Touch:</strong> swipe up / down / left / right on the board.</li>
+        <li><strong>Keyboard:</strong> arrow keys or WASD.</li>
+        <li><strong>Undo</strong> steps back one move. The <strong>Daily</strong> gives everyone the
+        same spawn sequence — hitting 1024 keeps your streak.</li>
+      </ul>
+
+      <h2>Strategy</h2>
+      <ol class="steps">
+        <li><strong>Anchor a corner.</strong> Choose one corner (say bottom-left) for your biggest
+        tile and never swipe the opposite way (up, in this case) unless the board forces you. A
+        dislodged anchor unravels the whole run.</li>
+        <li><strong>Play two directions.</strong> Alternate down and left as your bread and butter;
+        use right sparingly to refill the bottom row; treat up as a fire alarm.</li>
+        <li><strong>Build a snake.</strong> Keep values descending along the bottom row, then back
+        along the row above — 512·256·128·64 / 8·16·32·... A single new 2 can then cascade through
+        the entire chain.</li>
+        <li><strong>Keep the exit open.</strong> Never let the row with your anchor fill with
+        unmergeable clutter; always leave one cell it can breathe through.</li>
+        <li><strong>Think two swipes ahead.</strong> Before each move ask: where does the new tile
+        land, and can I still merge after it does?</li>
+      </ol>
+
+      <h2>A worked example</h2>
+      <p>Bottom row reads 128·64·16·(empty), the rest of the board holds small tiles. A left swipe
+      packs the row and risks nothing; a fresh 2 lands top-right — harmless. Two 8s sit stacked in
+      column two: swipe down, they merge to 16, sliding onto the 16 — merge again to 32, which now
+      sits beside the 64. That double cascade came from refusing to swipe up when a lazy merge
+      offered itself earlier. Patience compounds; that's the entire game.</p>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><strong>Swiping all four directions equally.</strong> That scatters big tiles into the
+        middle where they suffocate.</li>
+        <li><strong>Grabbing every merge instantly.</strong> If it breaks your descending order,
+        skip it.</li>
+        <li><strong>Letting the anchor row hollow out.</strong> When your corner row has gaps, a
+        forced sideways swipe can slide the anchor out — refill the row first.</li>
+        <li><strong>Panicking at a full board.</strong> Full boards often still have one quiet merge
+        that unlocks three more. Look before you flail.</li>
+      </ul>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq"><dl>
+        <dt>Is 2048 a game of luck?</dt>
+        <dd>Spawns are random (seeded on the Daily), but skilled play reaches 2048 with high
+        consistency — structure beats luck.</dd>
+        <dt>What's the highest possible tile?</dt>
+        <dd>131072 in theory on a 4×4 — if you get past 8192 you're in rare company.</dd>
+        <dt>Is there a daily challenge?</dt>
+        <dd>Yes — same spawn sequence for everyone each day; reach 1024 to keep your streak. Free,
+        no login.</dd>
+      </dl></div>
+
+      <p style="margin-top:20px;"><a class="cta" href="play.html">Try it now <svg viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"><path d="M9 5l7 7-7 7"/></svg></a></p>
+    </article>
+
+    <!-- AD SLOT -->
+    <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> 2048 — a <a href="../">Funduk Games</a> game ·
+       <a href="index.html">Home</a> · <a href="play.html">Play</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a> · <a href="https://www.patreon.com/Funduk" target="_blank" rel="noopener">Patreon</a></p>
+    <p class="disclaimer">
+      This is an independent implementation of the 2048 sliding-tile game and is not affiliated
+      with any other publisher. Trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

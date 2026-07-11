@@ -31,6 +31,9 @@
 
 * { box-sizing: border-box; }
 
+/* the hidden attribute must always win, even over .btn's display rules */
+[hidden] { display: none !important; }
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {
@@ -704,3 +707,36 @@ article.section a:hover { color: #f8e0a8; }
 .mj-tile.mj-sel { outline: 3px solid var(--accent-bright); outline-offset: 1px; filter: brightness(1.05); }
 .mj-tile.mj-hint { outline: 3px solid var(--accent-2); outline-offset: 1px; }
 .mj-tile.mj-shake { animation: shake .25s; }
+
+/* ───────────────────────── 2048 ───────────────────────── */
+.g2-board {
+  position: relative; width: 100%; max-width: 420px; margin: 0 auto 12px;
+  background: var(--board-line); border-radius: 12px; overflow: hidden;
+  touch-action: none; user-select: none; -webkit-user-select: none;
+}
+.g2-bg { position: absolute; inset: 3%; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 3.1%; }
+.g2-bgcell { background: rgba(253, 254, 249, .13); border-radius: 8px; }
+.g2-tile {
+  position: absolute; left: 0; top: 0; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-family: var(--font-head); line-height: 1;
+  transition: transform .1s ease;
+  background: var(--chip); color: var(--ink);
+}
+.g2-tile.g2-new { animation: g2in .16s ease backwards; }
+.g2-tile.g2-pop { animation: g2pop .18s ease; }
+@keyframes g2in { from { scale: .4; opacity: 0; } to { scale: 1; opacity: 1; } }
+@keyframes g2pop { 0% { scale: 1; } 50% { scale: 1.18; } 100% { scale: 1; } }
+.g2-v2 { background: #f2f4e8; color: var(--ink); }
+.g2-v4 { background: #ece9d2; color: var(--ink); }
+.g2-v8 { background: #f2d9a4; color: #6b4a12; }
+.g2-v16 { background: #f0c060; color: #4d350c; }
+.g2-v32 { background: #e0a63d; color: #fff; }
+.g2-v64 { background: #cf8724; color: #fff; }
+.g2-v128 { background: #a8751a; color: #fff; }
+.g2-v256 { background: #6f9e57; color: #fff; }
+.g2-v512 { background: #2e9e63; color: #fff; }
+.g2-v1024 { background: #2f6a49; color: #fff; }
+.g2-v2048 { background: linear-gradient(160deg, #f8d777, #e0a63d); color: #4d350c; box-shadow: 0 0 18px rgba(240, 188, 85, .8); }
+.g2-v4096 { background: #22301f; color: #f0bc55; box-shadow: 0 0 18px rgba(240, 188, 85, .6); }
+.g2-score { font-variant-numeric: tabular-nums; font-weight: 700; background: var(--chip); border-radius: 10px; padding: 4px 12px; color: var(--ink); }
