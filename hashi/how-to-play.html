@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>How to Play Hashi (Bridges) — Rules, Tips &amp; Strategy</title>
+  <meta name="description" content="How to play Hashi / Bridges: the capacity count, the all-but-one rule, corner logic and connectivity — the techniques that connect every archipelago without guessing." />
+  <meta name="theme-color" content="#101a15" />
+  <link rel="canonical" href="https://fundukgames.com/hashi/how-to-play.html" />
+  <meta property="og:image" content="https://fundukgames.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="index.html"><span class="crown"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="6" r="3.4" fill="#f0bc55"/><circle cx="19" cy="6" r="3.4" fill="#2f6a49"/><circle cx="12" cy="19" r="3.4" fill="#2f6a49"/><path d="M8.5 5h7M8.5 7h7M6.6 9l3.6 7M17.4 9l-3.6 7" stroke="#f0bc55" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg></span> Hashi</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="play.html">Play</a>
+      <a href="how-to-play.html">How to play</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>How to play Hashi</h1>
+      <p>Hashi is bookkeeping disguised as an archipelago: every island announces its bridge count,
+      and simple arithmetic pins the network down. Here are the rules and the moves.</p>
+
+      <h2>The rules</h2>
+      <ul>
+        <li>Each numbered circle is an <strong>island</strong>; the number is exactly how many
+        bridges must touch it (1–8).</li>
+        <li>Bridges run <strong>horizontally or vertically</strong> between two islands with a clear
+        line of sight.</li>
+        <li>At most <strong>two bridges</strong> between the same pair.</li>
+        <li>Bridges <strong>never cross</strong> other bridges or pass through islands.</li>
+        <li>The finished network must be <strong>one connected whole</strong> — every island
+        reachable from every other.</li>
+      </ul>
+
+      <h2>Controls</h2>
+      <ul>
+        <li><strong>Tap the gap</strong> between two aligned islands: once for a single bridge, again
+        for a double, a third time to remove.</li>
+        <li>Islands turn <strong>amber</strong> when their number is exactly met; over-full islands
+        outline in red if you pause.</li>
+        <li>Crossing attempts are rejected — the bridge simply won't place.</li>
+      </ul>
+
+      <h2>Solving strategies</h2>
+      <ol class="steps">
+        <li><strong>Capacity check.</strong> Count what an island's neighbors can still accept (at
+        most 2 each). If that total equals the island's number, every link maxes out. A corner "4"
+        with two neighbors: two doubles, done.</li>
+        <li><strong>The all-but-one rule.</strong> If skipping one neighbor leaves capacity below the
+        island's number, at least one bridge to that neighbor is forced. This is the workhorse
+        deduction — apply it everywhere.</li>
+        <li><strong>Ones and twos are picky.</strong> Two "1" islands may not be joined to each other
+        if that would seal them off from the rest; a "2" pair likewise can't take a double. Use
+        connectivity to prune options.</li>
+        <li><strong>New bridges cut sight lines.</strong> Every bridge you place blocks crossings —
+        recount the neighbors of nearby islands after each placement; forced moves cascade.</li>
+        <li><strong>Finish with connectivity.</strong> If the numbers all match but two groups stand
+        apart, a link is misplaced — the real solution is always one network.</li>
+      </ol>
+
+      <h2>A worked example</h2>
+      <p>An edge island shows "5" with two visible neighbors — one across, one below. Maximum
+      capacity is 2 + 2 = 4 from doubles... too little unless both are doubles <em>plus</em> — wait,
+      5 &gt; 4 is impossible, so one of its neighbors must actually be reachable the other way: check
+      the sight lines again after nearby bridges land. Say it truly has three neighbors with
+      capacities 2, 2 and 1. Skipping the "1" leaves 4 &lt; 5, so one bridge to the "1" is forced;
+      skipping either "2" leaves 3 &lt; 5, so a bridge to each "2" is forced as well. Four of five
+      bridges placed by arithmetic alone — and the fifth follows as neighbors fill up.</p>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><strong>Sealing off a pocket.</strong> Matching numbers isn't enough — a private
+        two-island loop breaks the connectivity rule even if the counts are perfect.</li>
+        <li><strong>Forgetting bridges block sight.</strong> A bridge across a corridor removes
+        island pairs that used to see each other — recount after every placement.</li>
+        <li><strong>Treating numbers as minimums.</strong> They're exact. An island with too many
+        bridges is just as wrong as too few.</li>
+        <li><strong>Ignoring the doubles limit.</strong> Two is the max per pair — a "8" island needs
+        all four directions doubled, no shortcuts.</li>
+      </ul>
+
+      <h2>Frequently asked questions</h2>
+      <div class="faq"><dl>
+        <dt>What does "Hashi" mean?</dt>
+        <dd>It's short for Hashiwokakero, Japanese for "build bridges" — the puzzle first appeared in
+        Japanese puzzle magazines.</dd>
+        <dt>Do I ever need to guess?</dt>
+        <dd>No — every board here is generated so counting logic alone completes it, with exactly one
+        solution.</dd>
+        <dt>Is there a daily puzzle?</dt>
+        <dd>Yes — a shared Daily Challenge with streaks, plus unlimited boards in three sizes. Free,
+        no login.</dd>
+      </dl></div>
+
+      <p style="margin-top:20px;"><a class="cta" href="play.html">Try it now <svg viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"><path d="M9 5l7 7-7 7"/></svg></a></p>
+    </article>
+
+    <!-- AD SLOT -->
+    <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Hashi — a <a href="../">Funduk Games</a> puzzle ·
+       <a href="index.html">Home</a> · <a href="play.html">Play</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a> · <a href="https://www.patreon.com/Funduk" target="_blank" rel="noopener">Patreon</a></p>
+    <p class="disclaimer">
+      Hashi is an independent implementation of the classic "Bridges" (Hashiwokakero) logic puzzle
+      and is not affiliated with, endorsed by, or sponsored by Nikoli Co., Ltd. or any other puzzle
+      publisher. Trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

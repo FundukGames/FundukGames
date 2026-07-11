@@ -151,6 +151,24 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://fundukgames.com/hashi/</loc>
+    <lastmod>2026-07-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://fundukgames.com/hashi/play.html</loc>
+    <lastmod>2026-07-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://fundukgames.com/hashi/how-to-play.html</loc>
+    <lastmod>2026-07-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://fundukgames.com/klondike/</loc>
     <lastmod>2026-07-11</lastmod>
     <changefreq>weekly</changefreq>

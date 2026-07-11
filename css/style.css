@@ -613,3 +613,22 @@ article.section a:hover { color: #f8e0a8; }
 .ak-cell.flash { box-shadow: inset 0 0 0 3px var(--accent-2); }
 .ak-board.is-won .ak-cell { cursor: default; }
 .ak-board.is-won .ak-cell.is-dot::before { opacity: 0; transition: opacity .4s ease; }
+
+/* ───────────────────────── Hashi (Bridges puzzle) ───────────────────────── */
+.hs-board {
+  display: block; width: 100%; max-width: 460px; aspect-ratio: 1 / 1; margin: 0 auto 12px;
+  background: #fdfef9; border: 3px solid var(--board-line); border-radius: 12px;
+  touch-action: manipulation; user-select: none; -webkit-user-select: none;
+}
+.hs-hit { stroke: transparent; stroke-width: 22; cursor: pointer; pointer-events: stroke; }
+.hs-hit:hover { stroke: rgba(224, 166, 61, .14); }
+.hs-bridge { stroke: #4a5d4e; stroke-width: 3.4; stroke-linecap: round; pointer-events: none; }
+.hs-island { pointer-events: none; }
+.hs-island circle { fill: var(--chip); stroke: #4a5d4e; stroke-width: 2.4; }
+.hs-island text { font-weight: 800; font-size: 15px; fill: var(--ink); font-family: var(--font-head); }
+.hs-island.is-done circle { fill: var(--accent); stroke: var(--accent-deep); }
+.hs-island.is-done text { fill: var(--accent-ink); }
+.hs-island.is-bad circle { stroke: #d94f3d; stroke-width: 3.4; }
+.hs-island.flash circle { stroke: var(--accent-2); stroke-width: 3.4; }
+.hs-board.is-won .hs-hit { cursor: default; }
+.hs-board.is-won .hs-bridge { stroke: var(--accent-deep); }
