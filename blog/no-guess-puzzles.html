@@ -98,6 +98,24 @@
         have to gamble on a 50/50.</li>
         <li><strong><a href="../trail/play.html">Trail</a></strong> guarantees a single continuous path
         that visits every cell, so the "one line" you're hunting for is the only one that exists.</li>
+        <li><strong><a href="../nonogram/play.html">Nonogram</a></strong> only ships boards that
+        complete through single-line deduction — the overlap technique and its friends always
+        suffice, and a line-solved board is unique by construction.</li>
+        <li><strong><a href="../minesweeper/play.html">Minesweeper</a></strong> plays every candidate
+        board with a solver that knows the counting rules, the 1-2 subset patterns and the global
+        mine count. If the solver would face a 50/50, mines get moved until it doesn't — the famous
+        end-of-game coin-flip simply never happens.</li>
+        <li><strong><a href="../pipes/play.html">Pipes</a></strong> builds its network as a spanning
+        tree, then counts every leak-free arrangement and rejects any board with more than one — so
+        the solved state you reach is <em>the</em> solution.</li>
+        <li><strong><a href="../akari/play.html">Akari</a></strong> and
+        <strong><a href="../futoshiki/play.html">Futoshiki</a></strong> strip their clues greedily
+        while a logic solver keeps finishing the board — every clue that remains is load-bearing.</li>
+        <li><strong><a href="../hashi/play.html">Hashi</a></strong> is only served if a counting
+        solver can rebuild the entire bridge network from forced moves alone.</li>
+        <li>Even <strong><a href="../mahjong/play.html">Mahjong Solitaire</a></strong> — a card-luck
+        genre everywhere else — deals its tiles by simulating a legal disassembly in reverse, so a
+        winning sequence always exists.</li>
       </ul>
 
       <!-- AD SLOT -->

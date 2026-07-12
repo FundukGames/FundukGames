@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>Futoshiki Tips: How to Solve Inequality Puzzles Fast | Funduk Games</title>
+  <meta name="description" content="Futoshiki solving techniques: chain logic, placing the 1 and the N first, range shrinking, hidden singles — everything you need for 5×5 to 7×7 inequality puzzles." />
+  <meta name="theme-color" content="#101a15" />
+  <link rel="canonical" href="https://fundukgames.com/blog/futoshiki-tips.html" />
+  <meta property="og:image" content="https://fundukgames.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Futoshiki Tips: How to Solve Inequality Puzzles Fast",
+    "description": "Futoshiki solving techniques: chain logic, placing the 1 and the N first, range shrinking, hidden singles — everything you need for 5×5 to 7×7 inequality puzzles.",
+    "datePublished": "2026-07-12",
+    "dateModified": "2026-07-12",
+    "author": { "@type": "Organization", "name": "Funduk Games", "url": "https://fundukgames.com/" },
+    "publisher": { "@type": "Organization", "name": "Funduk Games", "url": "https://fundukgames.com/" },
+    "image": "https://fundukgames.com/og-image.png",
+    "mainEntityOfPage": "https://fundukgames.com/blog/futoshiki-tips.html"
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html"><span class="crown">🌰</span> Funduk Games</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="index.html">Blog</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>Futoshiki Tips: How to Solve Inequality Puzzles Fast</h1>
+      <p class="post-meta">Published July 12, 2026</p>
+
+      <p>Futoshiki ("not equal" in Japanese, also published as More or Less) is Sudoku's
+      sharp-tongued cousin: fill the grid so every row and column holds 1–N exactly once, while
+      every ‹ and › sign between cells tells the truth. Good boards give you almost no starting
+      numbers — the signs carry the logic. Here's the technique ladder, from first move to the
+      tricks that crack a bare 7×7. Every board on our free
+      <a href="../futoshiki/play.html">Futoshiki</a> is solvable with these steps alone.</p>
+
+      <h2>0. Read the signs right</h2>
+      <p>The point of the sign always aims at the <strong>smaller</strong> number — including
+      vertical signs, where the point aims up or down. Misreading one sign poisons everything
+      downstream, so make this automatic before anything else.</p>
+
+      <h2>1. Chase the chains</h2>
+      <p>Signs chain into ladders, and ladders are the strongest clue on the board. In
+      a ‹ b ‹ c ‹ d, the cell a is at most N−3 and d is at least 4; on a 5×5, a four-cell ladder
+      pins its ends to 1-ish and 5-ish immediately. Trace every chain when you first look at the
+      board — the longest one is usually the intended way in.</p>
+
+      <h2>2. Place the extremes first</h2>
+      <p>The 1 can never sit on the open (larger) side of any sign; the N can never sit on the
+      point side. Scan each row and column asking just two questions: <em>where can its 1 go? where
+      can its N?</em> Very often only one cell qualifies — that's a placement, no other technique
+      needed. This single habit solves most 5×5 boards nearly alone.</p>
+
+      <h2>3. Think in ranges</h2>
+      <p>Treat every empty cell as a range of possible values. Each sign trims a range: "less than
+      a neighbor whose maximum is 4" cuts you to 1–3. Each placed number trims every range in its
+      row and column. When a range collapses to one value, write it in and propagate. This is
+      exactly how our <a href="../futoshiki/play.html">teaching hints</a> reason when you ask for
+      help — they'll show which neighbors and signs did the squeezing.</p>
+
+      <h2>4. Hidden singles finish the middle game</h2>
+      <p>Straight from Sudoku: if a value fits in only one cell of a row or column — even though
+      that cell has other candidates — it must go there. In Futoshiki the "fits" check includes
+      signs, which eliminate more cells than beginners expect. When ranges stall, sweep each
+      row/column value by value; a hidden single is almost always hiding
+      (<a href="sudoku-tips.html">the Sudoku version of this technique</a> transfers directly).</p>
+
+      <h2>5. The two-candidate test</h2>
+      <p>Endgame cells often come down to two candidates. Test one mentally: follow the signs and
+      the uniqueness rule a step or two; if some cell runs out of options, the tested value was
+      wrong and the other is forced. This isn't guessing — it's a bounded proof by contradiction,
+      and boards never require more than one step of it on our generator.</p>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><strong>Sign blindness mid-solve.</strong> A number placed next to a sign constrains the
+        neighbor immediately — re-check all four signs around every entry.</li>
+        <li><strong>Treating it as Sudoku with decoration.</strong> The signs aren't hints, they're
+        the spine. A row with three signs is usually easier than a row with a given number.</li>
+        <li><strong>Forgetting uniqueness away from signs.</strong> Rows and columns need 1–N once
+        each everywhere, signed or not.</li>
+        <li><strong>Random-filling small boards.</strong> 4×4 tolerates it; 6×6 will punish you. The
+        extremes-first habit is faster anyway.</li>
+      </ul>
+
+      <p>Play free unlimited <a href="../futoshiki/play.html">Futoshiki</a> — 5×5 to 7×7, near-zero
+      givens, a shared daily with streaks, and hints that explain the deduction instead of just
+      filling the cell. If you like latin-square logic, our <a href="../sudoku/">Sudoku</a> and the
+      binary-balance <a href="../sunmoon/">SunMoon</a> are natural next steps.</p>
+    </article>
+
+    <!-- AD SLOT -->
+    <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Funduk Games ·
+       <a href="../">Games</a> · <a href="index.html">Blog</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a> ·
+       <a href="https://www.patreon.com/Funduk" target="_blank" rel="noopener">Patreon</a></p>
+    <p class="disclaimer">
+      Funduk Games' Futoshiki is an independent implementation of the classic public-domain
+      inequality puzzle. Trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

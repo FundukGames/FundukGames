@@ -33,6 +33,46 @@
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is Hashi free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes — completely free, supported by ads. No download, no login."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I ever need to guess?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No — every board is verified solvable by forced counting moves alone, and each has exactly one solution."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can bridges run diagonally?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No — horizontal and vertical only, and only between islands with a clear line between them."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there a daily puzzle?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes — a shared daily board with streaks, plus unlimited random boards in three sizes."
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <header class="site-header">
@@ -125,6 +165,14 @@
         <a href="../pipes/">Pipes</a> (rotate &amp; connect),
         <a href="../akari/">Akari</a> (Light Up),
         <a href="../nonogram/">Nonogram</a> and <a href="../minesweeper/">Minesweeper</a>.</p>
+      </section>
+
+      <section class="section">
+        <h2>From the blog</h2>
+        <ul>
+          <li><a href="../blog/how-to-solve-hashi.html">How to solve Hashi (Bridges) puzzles</a></li>
+          <li><a href="../blog/no-guess-puzzles.html">How we make puzzles that never need a guess</a></li>
+        </ul>
       </section>
 
       <p style="text-align:center;margin:24px 0;"><a class="cta" href="play.html">Start playing <svg viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"><path d="M9 5l7 7-7 7"/></svg></a></p>

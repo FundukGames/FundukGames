@@ -33,6 +33,46 @@
     "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
   }
   </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is this Minesweeper free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes — completely free, supported by ads. No download, no login."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What does \"no-guess\" mean?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Every board is checked by a solver that only uses human-style logic. If the solver would need to guess, the board is repaired until it doesn't. You will never face a 50/50."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can my first click hit a mine?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No — the first dig is always safe and always opens an area to work from."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is there a daily puzzle?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes — a shared 16×16 daily board with streaks, plus unlimited random boards."
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <header class="site-header">
@@ -123,6 +163,14 @@
         <a href="../nonogram/">Nonogram</a> (picture cross),
         <a href="../crowngrid/">CrownGrid</a> (crown placement),
         <a href="../sudoku/">Sudoku</a> and <a href="../sunmoon/">SunMoon</a>.</p>
+      </section>
+
+      <section class="section">
+        <h2>From the blog</h2>
+        <ul>
+          <li><a href="../blog/minesweeper-patterns.html">Minesweeper patterns: how to win without guessing</a></li>
+          <li><a href="../blog/no-guess-puzzles.html">How we make puzzles that never need a guess</a></li>
+        </ul>
       </section>
 
       <p style="text-align:center;margin:24px 0;"><a class="cta" href="play.html">Start playing <svg viewBox="0 0 24 24" aria-hidden="true" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round"><path d="M9 5l7 7-7 7"/></svg></a></p>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>How to Solve Hashi (Bridges) Puzzles: Rules &amp; Techniques | Funduk Games</title>
+  <meta name="description" content="A practical guide to Hashiwokakero (Bridges): the capacity count, the all-but-one rule, corner islands, the no-isolation rule and how bridges cut sight lines." />
+  <meta name="theme-color" content="#101a15" />
+  <link rel="canonical" href="https://fundukgames.com/blog/how-to-solve-hashi.html" />
+  <meta property="og:image" content="https://fundukgames.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "How to Solve Hashi (Bridges) Puzzles: Rules & Techniques",
+    "description": "A practical guide to Hashiwokakero (Bridges): the capacity count, the all-but-one rule, corner islands, the no-isolation rule and how bridges cut sight lines.",
+    "datePublished": "2026-07-12",
+    "dateModified": "2026-07-12",
+    "author": { "@type": "Organization", "name": "Funduk Games", "url": "https://fundukgames.com/" },
+    "publisher": { "@type": "Organization", "name": "Funduk Games", "url": "https://fundukgames.com/" },
+    "image": "https://fundukgames.com/og-image.png",
+    "mainEntityOfPage": "https://fundukgames.com/blog/how-to-solve-hashi.html"
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html"><span class="crown">🌰</span> Funduk Games</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="index.html">Blog</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>How to Solve Hashi (Bridges) Puzzles: Rules &amp; Techniques</h1>
+      <p class="post-meta">Published July 12, 2026</p>
+
+      <p>Hashi — short for Hashiwokakero, "build bridges" — is the puzzle that turns arithmetic into
+      an archipelago. Numbered islands must be joined by horizontal and vertical bridges: at most
+      two per pair, no crossings, every island's number met exactly, and the whole map connected
+      into one network. It's pure counting logic, and every board on our free
+      <a href="../hashi/play.html">Hashi</a> is verified to fall to the techniques below — no
+      guessing required.</p>
+
+      <h2>The rules in thirty seconds</h2>
+      <ul>
+        <li>Bridges run <strong>straight</strong> between two islands with a clear line of sight —
+        horizontal or vertical only.</li>
+        <li>At most <strong>two bridges</strong> between the same pair of islands.</li>
+        <li>Bridges may <strong>never cross</strong> other bridges or pass through islands.</li>
+        <li>Each island's number = exactly how many bridges touch it (1–8).</li>
+        <li>Everything must end up in <strong>one connected network</strong>.</li>
+      </ul>
+
+      <h2>1. Start where capacity is maxed</h2>
+      <p>Some islands are forced before you draw a single line. Count an island's neighbors and
+      remember each can take at most 2 bridges:</p>
+      <ul>
+        <li>A corner island can see at most 2 neighbors — so a corner <strong>4</strong> is two
+        doubles, done.</li>
+        <li>An edge island sees at most 3 — an edge <strong>6</strong> is three doubles.</li>
+        <li>An interior <strong>8</strong> is four doubles, all directions.</li>
+      </ul>
+      <p>Slightly weaker but just as useful: a corner 3 must have at least one bridge in
+      <em>each</em> direction (2+2 capacity minus the 3 leaves no direction empty). This "half
+      forced" reasoning fills boards fast.</p>
+
+      <h2>2. The all-but-one rule (the workhorse)</h2>
+      <p>For any island: if skipping one neighbor leaves the others' combined capacity short of the
+      island's number, at least one bridge to that neighbor is <strong>forced</strong>. Formally:
+      needed − (total capacity − this neighbor's capacity) &gt; 0 ⇒ that many bridges are
+      guaranteed. It sounds abstract; in play it's "this 5 has neighbors worth 2+2+1 — drop the 1
+      and I only reach 4, so the 1 gets a bridge." Our in-game
+      <a href="../hashi/play.html">hint system</a> spells out exactly this count when you ask.</p>
+
+      <h2>3. Every bridge changes the map</h2>
+      <p>Bridges block sight lines. The moment you draw one, islands that used to see each other
+      across that corridor no longer do — which shrinks capacities — and neighbors that reached
+      their number drop out of everyone's counts. After every placement, recount the islands around
+      it; forced moves cascade in chains of three and four.</p>
+
+      <h2>4. Don't strand a pocket</h2>
+      <p>The connectivity rule has a sharp local edge: joining two 1-islands to each other seals
+      them off from the world — illegal. Same for a pair of 2s taking a double bridge between them
+      (unless they're the entire puzzle). Generalized: never complete a small group's numbers if it
+      would close the group off; some link must stay open to the rest of the map. This rule mostly
+      <em>removes</em> options, which in Hashi is exactly what a deduction is.</p>
+
+      <h2>5. Endgame: connectivity finishes the job</h2>
+      <p>Late boards often reach "all numbers satisfied except two islands with one bridge missing
+      each". If connecting them directly is legal, that's your answer; if not, some earlier double
+      should have been a single along a different route — undo locally and re-route. On our boards
+      the counting rules alone always suffice, but reading the network's shape gets you there
+      faster.</p>
+
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><strong>Treating numbers as minimums.</strong> They're exact — an island with too many
+        bridges is broken, and our board will outline it in red.</li>
+        <li><strong>Forgetting bridges block sight.</strong> The pair you're counting on may no
+        longer see each other after that last placement.</li>
+        <li><strong>Ignoring the doubles limit.</strong> Two per pair, full stop — an 8 can't take
+        three from one side.</li>
+        <li><strong>Leaving connectivity for "later".</strong> The isolation rule is a live
+        constraint from move one, not an endgame check.</li>
+      </ul>
+
+      <p>Play free unlimited <a href="../hashi/play.html">Hashi</a> — three board sizes, a shared
+      daily with streaks, teaching hints and the <a href="no-guess-puzzles.html">no-guess
+      guarantee</a>. Enjoy connection puzzles? <a href="../pipes/">Pipes</a> has you rotating a
+      plumbing network into one leak-free tree, and <a href="../akari/">Akari</a> lights rooms with
+      the same flavor of counting.</p>
+    </article>
+
+    <!-- AD SLOT -->
+    <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Funduk Games ·
+       <a href="../">Games</a> · <a href="index.html">Blog</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a> ·
+       <a href="https://www.patreon.com/Funduk" target="_blank" rel="noopener">Patreon</a></p>
+    <p class="disclaimer">
+      Funduk Games' Hashi is an independent implementation of the classic public-domain Bridges
+      puzzle, not affiliated with Nikoli Co., Ltd. Trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

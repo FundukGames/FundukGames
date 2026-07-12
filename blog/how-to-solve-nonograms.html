@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>How to Solve Nonograms (Picture Cross): A Complete Guide | Funduk Games</title>
+  <meta name="description" content="Learn to solve nonograms (Picross, picture cross, griddlers): the overlap technique, edge logic, splitting lines with ✕s, and the habits that finish any board without guessing." />
+  <meta name="theme-color" content="#101a15" />
+  <link rel="canonical" href="https://fundukgames.com/blog/how-to-solve-nonograms.html" />
+  <meta property="og:image" content="https://fundukgames.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "How to Solve Nonograms (Picture Cross): A Complete Guide",
+    "description": "Learn to solve nonograms (Picross, picture cross, griddlers): the overlap technique, edge logic, splitting lines with ✕s, and the habits that finish any board without guessing.",
+    "datePublished": "2026-07-12",
+    "dateModified": "2026-07-12",
+    "author": { "@type": "Organization", "name": "Funduk Games", "url": "https://fundukgames.com/" },
+    "publisher": { "@type": "Organization", "name": "Funduk Games", "url": "https://fundukgames.com/" },
+    "image": "https://fundukgames.com/og-image.png",
+    "mainEntityOfPage": "https://fundukgames.com/blog/how-to-solve-nonograms.html"
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html"><span class="crown">🌰</span> Funduk Games</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="index.html">Blog</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>How to Solve Nonograms (Picture Cross): A Complete Guide</h1>
+      <p class="post-meta">Published July 12, 2026</p>
+
+      <p>Nonograms — also sold as Picross, picture cross, griddlers or hanjie — hide a pixel picture
+      behind number clues. Each number lists the runs of filled cells in a row or column, in order,
+      with at least one gap between runs. That single rule generates surprisingly deep logic, and the
+      best part is that a well-made board never needs a guess. Here's the complete toolkit, from your
+      very first move to the habits that carry you through 15×15 boards. You can practice everything
+      below on our free <a href="../nonogram/play.html">Nonogram</a>, which generates unlimited
+      boards that are always solvable line by line.</p>
+
+      <h2>1. Start with the overlap technique</h2>
+      <p>The overlap (or "big number") technique is the engine of every nonogram solve. Take a run
+      and imagine sliding it as far left as it can go, then as far right. Any cells covered in
+      <em>both</em> extremes must be filled in every legal arrangement — so fill them now.</p>
+      <p>Concretely: a 7-run in a 10-wide row occupies cells 1–7 at the far left and 4–10 at the far
+      right. Cells 4–7 are covered either way — four guaranteed fills from a single clue. The bigger
+      the number relative to the line, the bigger the overlap; a clue equal to the line's length
+      fills it completely. Scan every row and column for these before doing anything else.</p>
+
+      <h2>2. Work the edges</h2>
+      <p>Whenever a filled cell touches a wall — or an ✕ you've placed — the run it belongs to is
+      anchored. If the edge cell of a row with clue "4 2" is filled, the 4-run occupies exactly cells
+      1–4, and cell 5 must be empty. Mark that ✕ immediately: anchors are how one deduction becomes
+      three.</p>
+
+      <h2>3. Mark the ✕s — they're half the game</h2>
+      <p>Beginners fill cells and ignore the empties. Experts know a proven-empty cell is worth just
+      as much: every ✕ splits a line into smaller independent segments, and short segments are easy.
+      If a segment between two ✕s is shorter than the next run that must fit there, the whole
+      segment is empty — ✕ it out. When a line's runs are all placed, ✕ every remaining cell; those
+      ✕s become anchors for all the crossing lines.</p>
+
+      <h2>4. Count what's left</h2>
+      <p>Mid-solve, re-read each clue against what's on the line. A row clued "1 3" that already
+      shows a filled single and a filled triple is done — close it with ✕s. A row clued "5" with
+      three adjacent fills can extend at most two cells in either direction; anything further out is
+      ✕. This "what could this line still be?" re-scan is where most stuck players find their next
+      move.</p>
+
+      <h2>5. Alternate directions in passes</h2>
+      <p>Nonograms are solved in waves: a pass over the rows creates new information in the columns,
+      which creates new information back in the rows. If you stall, don't stare harder at one line —
+      sweep the other direction. On our boards this loop is guaranteed to finish the puzzle: the
+      generator verifies every board completes through line logic alone, with a unique solution
+      (that's the same <a href="no-guess-puzzles.html">no-guess standard</a> behind all Funduk logic
+      games).</p>
+
+      <h2>6. When you're stuck, use hints that teach</h2>
+      <p>Our <a href="../nonogram/play.html">Nonogram</a> has a hint system built for learning: the
+      first press highlights the line whose clue forces a move and explains the deduction in plain
+      words; a second press plays it for you. It's the fastest way to internalize overlap thinking —
+      see the reasoning a few times and you'll start spotting it yourself.</p>
+
+      <h2>Common mistakes to avoid</h2>
+      <ul>
+        <li><strong>Guessing.</strong> If a fill "feels right", it isn't logic. There is always a
+        forced move somewhere — usually in the direction you haven't swept recently.</li>
+        <li><strong>Forgetting the gap rule.</strong> "2 2" is never four in a row; runs need at
+        least one empty cell between them.</li>
+        <li><strong>Reading clues out of order.</strong> The first number is the first run you meet
+        reading left-to-right (or top-to-bottom). Order matters.</li>
+        <li><strong>Fill-only play.</strong> If you never place ✕s, 10×10 and larger boards will
+        stall. Empties are information.</li>
+      </ul>
+
+      <h2>Where to play</h2>
+      <p>Play unlimited free nonograms — 5×5 to 15×15, plus a shared Daily Challenge with streaks —
+      on <a href="../nonogram/">Funduk Nonogram</a>. No login, no download, and every board is
+      guaranteed solvable by pure logic. If you like line-by-line deduction, try our
+      <a href="../sunmoon/">SunMoon</a> (binary balance) and
+      <a href="../minesweeper/">no-guess Minesweeper</a> next.</p>
+    </article>
+
+    <!-- AD SLOT -->
+    <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Funduk Games ·
+       <a href="../">Games</a> · <a href="index.html">Blog</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a> ·
+       <a href="https://www.patreon.com/Funduk" target="_blank" rel="noopener">Patreon</a></p>
+    <p class="disclaimer">
+      Funduk Games' titles are independent products, not affiliated with Nintendo or any other
+      puzzle publisher. Trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>

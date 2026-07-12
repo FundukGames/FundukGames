@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7955768025744255" crossorigin="anonymous"></script>
+  <title>Minesweeper Patterns: How to Win Without Guessing | Funduk Games</title>
+  <meta name="description" content="The Minesweeper patterns every player should know — satisfied numbers, tight fits, the 1-1 and 1-2 patterns, subset logic and endgame mine counting — plus where to play no-guess boards." />
+  <meta name="theme-color" content="#101a15" />
+  <link rel="canonical" href="https://fundukgames.com/blog/minesweeper-patterns.html" />
+  <meta property="og:image" content="https://fundukgames.com/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap" rel="stylesheet" />
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Minesweeper Patterns: How to Win Without Guessing",
+    "description": "The Minesweeper patterns every player should know — satisfied numbers, tight fits, the 1-1 and 1-2 patterns, subset logic and endgame mine counting — plus where to play no-guess boards.",
+    "datePublished": "2026-07-12",
+    "dateModified": "2026-07-12",
+    "author": { "@type": "Organization", "name": "Funduk Games", "url": "https://fundukgames.com/" },
+    "publisher": { "@type": "Organization", "name": "Funduk Games", "url": "https://fundukgames.com/" },
+    "image": "https://fundukgames.com/og-image.png",
+    "mainEntityOfPage": "https://fundukgames.com/blog/minesweeper-patterns.html"
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../index.html"><span class="crown">🌰</span> Funduk Games</a>
+    <nav class="nav">
+      <a href="../">All games</a>
+      <a href="index.html">Blog</a>
+      <a href="../about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <article class="section">
+      <h1>Minesweeper Patterns: How to Win Without Guessing</h1>
+      <p class="post-meta">Published July 12, 2026</p>
+
+      <p>Minesweeper has a reputation as a luck game, and it's undeserved — at least until the last
+      few cells. Nearly every move on a Minesweeper board is decidable by a handful of recurring
+      patterns, and players who know them clear intermediate boards on instinct. This guide walks
+      through the patterns in the order you should learn them. If you want to practice on boards
+      where these patterns are <em>guaranteed</em> to be enough — no 50/50 coin-flips, ever — play
+      our <a href="../minesweeper/play.html">no-guess Minesweeper</a>: its generator verifies every
+      board with a logic solver before you see it.</p>
+
+      <h2>The two reflexes: satisfied and tight-fit numbers</h2>
+      <p>Ninety percent of Minesweeper is two symmetrical observations:</p>
+      <ul>
+        <li><strong>Satisfied number → everything else is safe.</strong> If a "2" already touches
+        two flags, every other covered neighbor is guaranteed clear. Open them all (in most
+        versions, clicking the satisfied number itself "chords" them open at once).</li>
+        <li><strong>Tight fit → everything is a mine.</strong> If a "3" has exactly three covered
+        neighbors left, all three are mines. Flag them without thinking.</li>
+      </ul>
+      <p>Play a few games using only these two rules and you'll be surprised how far they carry you.
+      Speed comes from applying them the instant a number's neighborhood changes.</p>
+
+      <h2>The 1-1 pattern</h2>
+      <p>Two 1s side by side along an unopened wall, where the first 1's covered cells are a subset
+      of the second's: the first 1's mine must be among the shared cells, which satisfies the second
+      1 too — so any extra cell only the second 1 sees is <strong>safe</strong>. This is the pattern
+      that opens up long straight borders.</p>
+
+      <h2>The 1-2 pattern</h2>
+      <p>A 1 and a 2 adjacent along a wall, sharing two covered cells, with the 2 seeing one extra
+      cell: the 1 allows at most one mine among the shared cells, but the 2 needs two in total — so
+      the extra cell is always a <strong>mine</strong>. Its famous cousin 1-2-1 places mines under
+      both 1s; 1-2-2-1 places them under the 2s. You don't need to memorize the variants if you
+      remember the reasoning: <em>compare what two overlapping numbers can account for</em>.</p>
+
+      <h2>Subset logic (the general form)</h2>
+      <p>All the named patterns are special cases of one idea. Take two numbers A and B whose covered
+      neighborhoods overlap, where A's cells are contained in B's. Then:</p>
+      <ul>
+        <li>If A and B need the <strong>same</strong> number of mines, B's extra cells are safe.</li>
+        <li>If B needs <strong>exactly as many more</strong> mines as it has extra cells, the extra
+        cells are all mines.</li>
+      </ul>
+      <p>Once this clicks, you stop seeing "patterns" and start seeing arithmetic. Our Minesweeper's
+      <a href="../minesweeper/play.html">hint system</a> names these deductions as it shows them —
+      first press explains which numbers force the move and why, second press plays it — which is a
+      fast way to train the eye.</p>
+
+      <h2>Endgame: count the mines</h2>
+      <p>The 🚩 counter is a constraint, not decoration. When the remaining mine count equals the
+      number of covered cells, they're all mines; when it hits zero, everything left is safe. Many
+      "unsolvable" endgames fall instantly to this global count — check it whenever local numbers
+      stop moving.</p>
+
+      <h2>What about real 50/50s?</h2>
+      <p>On classic random boards, sometimes no pattern helps — two identical cells, one mine, pick
+      one. That's not a skill failure; the board genuinely forces a guess. It's also fixable at the
+      source: our <a href="../minesweeper/">Minesweeper</a> plays every candidate board with a
+      solver that uses exactly the deductions above (plus the mine counter), and if the solver would
+      have to guess, mines are relocated until it doesn't. The result: if you lose, there was
+      always a findable move — which turns every defeat into a lesson. That guarantee is the same
+      <a href="no-guess-puzzles.html">no-guess standard</a> we apply to all our logic games.</p>
+
+      <h2>Quick habits that add up</h2>
+      <ul>
+        <li><strong>Flag only what you've proven.</strong> A wrong flag silently corrupts every
+        number that touches it.</li>
+        <li><strong>Chord aggressively.</strong> Satisfied numbers open multiple cells at once —
+        it's both faster and safer than clicking cells individually.</li>
+        <li><strong>Work the border, not the middle.</strong> New information only appears where
+        numbers meet covered cells.</li>
+        <li><strong>Re-scan after every flag.</strong> Each new flag can satisfy several numbers at
+        once — collect all the free opens before moving on.</li>
+      </ul>
+
+      <p>Ready to practice? Play free unlimited <a href="../minesweeper/play.html">no-guess
+      Minesweeper</a> — three difficulty levels, a shared daily board with streaks, no login. And if
+      deduction is your thing, our <a href="../nonogram/">Nonogram</a> and
+      <a href="../akari/">Akari</a> scratch the same itch.</p>
+    </article>
+
+    <!-- AD SLOT -->
+    <div class="ad-slot">Ad space — your AdSense unit goes here</div>
+  </main>
+
+  <footer class="site-footer">
+    <p>© <span id="year"></span> Funduk Games ·
+       <a href="../">Games</a> · <a href="index.html">Blog</a> ·
+       <a href="../about.html">About</a> · <a href="../privacy.html">Privacy</a> ·
+       <a href="https://www.patreon.com/Funduk" target="_blank" rel="noopener">Patreon</a></p>
+    <p class="disclaimer">
+      Funduk Games' titles are independent products, not affiliated with Microsoft Corporation or
+      any other publisher. Trademarks belong to their owners.
+    </p>
+  </footer>
+
+  <script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+</body>
+</html>
