@@ -82,6 +82,7 @@
   const els = {};
   let state = null; // { size, regions, solution, marks, auto, mode, solved, elapsedMs }
   let timerId = null;
+  let coach = null; // explanatory-hint controller (window.HintCoach)
   const pointer = { active: false, moved: false, startR: 0, startC: 0, lastKey: "", paintVal: MARK };
 
   // ---- localStorage stats ----------------------------------------------
@@ -156,6 +157,7 @@
       ? "Daily Challenge · " + todayKey()
       : "Unlimited · " + size + "×" + size;
     hideWinModal();
+    if (coach) coach.reset();
     buildBoard();
     setMessage("", "");
     els.timer.textContent = "0:00";
@@ -241,6 +243,7 @@
     if (state.solved) return;
     const cell = e.target.closest && e.target.closest(".cell");
     if (!cell || cell.parentElement !== els.board) return;
+    coach.reset();
     pointer.active = true;
     pointer.moved = false;
     pointer.startR = +cell.dataset.r;
@@ -391,28 +394,121 @@
   // ---- hint / clear ------------------------------------------------------
   function hint() {
     if (state.solved) return;
+    // a wrong crown trumps any teaching — point at it first
     for (let r = 0; r < state.size; r++) {
       for (let c = 0; c < state.size; c++) {
         if (state.marks[r][c] === CROWN && state.solution[r] !== c) {
+          coach.reset();
           flash(cellAt(r, c));
           setMessage("That crown can't be right — try removing a flagged one.", "warn");
           return;
         }
       }
     }
-    for (let r = 0; r < state.size; r++) {
-      const c = state.solution[r];
-      if (state.marks[r][c] !== CROWN) {
+    coach.press();
+  }
+
+  // ---- explanatory hints: name the elimination that forces the move -------
+  function explainHint() {
+    const n = state.size;
+    const crownInRow = new Array(n).fill(false), crownInCol = new Array(n).fill(false), crownInReg = new Array(n).fill(false);
+    for (let r = 0; r < n; r++)
+      for (let c = 0; c < n; c++)
+        if (state.marks[r][c] === CROWN) { crownInRow[r] = true; crownInCol[c] = true; crownInReg[state.regions[r][c]] = true; }
+    const avail = (r, c) => state.marks[r][c] === EMPTY && !state.auto[r][c];
+    const regCells = Array.from({ length: n }, () => []);
+    for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) regCells[state.regions[r][c]].push([r, c]);
+
+    const mkCrown = (premise, r, c, text) => ({
+      premise: premise, target: [cellAt(r, c)], text: text,
+      apply: () => {
         state.marks[r][c] = CROWN;
-        recomputeAuto();
-        repaintAll();
-        flash(cellAt(r, c));
-        clearConflicts();
+        recomputeAuto(); repaintAll(); clearConflicts();
+        setMessage("", "");
         checkWin();
-        setMessage("Revealed one crown. Keep going!", "");
-        return;
+      }
+    });
+
+    // 1) a region down to its last free square
+    for (let reg = 0; reg < n; reg++) {
+      if (crownInReg[reg]) continue;
+      const cands = regCells[reg].filter(([r, c]) => avail(r, c));
+      if (cands.length === 1) {
+        const [r, c] = cands[0];
+        return mkCrown(
+          regCells[reg].filter(([rr, cc]) => rr !== r || cc !== c).map(([rr, cc]) => cellAt(rr, cc)),
+          r, c,
+          "Every other square of the dashed region is ruled out — and each region holds exactly one crown, so it must go here");
       }
     }
+    // 2) a row / column down to one available square
+    for (let r = 0; r < n; r++) {
+      if (crownInRow[r]) continue;
+      const cands = [];
+      for (let c = 0; c < n; c++) if (avail(r, c)) cands.push(c);
+      if (cands.length === 1)
+        return mkCrown(
+          Array.from({ length: n }, (_, c) => c).filter((c) => c !== cands[0]).map((c) => cellAt(r, c)),
+          r, cands[0],
+          "This row still needs its crown and only one of its squares is left available — that settles it");
+    }
+    for (let c = 0; c < n; c++) {
+      if (crownInCol[c]) continue;
+      const cands = [];
+      for (let r = 0; r < n; r++) if (avail(r, c)) cands.push(r);
+      if (cands.length === 1)
+        return mkCrown(
+          Array.from({ length: n }, (_, r) => r).filter((r) => r !== cands[0]).map((r) => cellAt(r, c)),
+          cands[0], c,
+          "This column still needs its crown and only one of its squares is left available — that settles it");
+    }
+    // 3) a region confined to one row/column → cross out the rest of that line
+    for (let reg = 0; reg < n; reg++) {
+      if (crownInReg[reg]) continue;
+      const cands = regCells[reg].filter(([r, c]) => avail(r, c));
+      if (cands.length < 2) continue;
+      const rows = new Set(cands.map(([r]) => r)), cols = new Set(cands.map(([, c]) => c));
+      if (rows.size === 1) {
+        const r = cands[0][0];
+        const targets = [];
+        for (let c = 0; c < n; c++) if (avail(r, c) && state.regions[r][c] !== reg) targets.push([r, c]);
+        if (targets.length)
+          return {
+            premise: cands.map(([rr, cc]) => cellAt(rr, cc)),
+            target: targets.map(([rr, cc]) => cellAt(rr, cc)),
+            text: "All of the dashed region's remaining squares sit in one row — its crown will occupy that row, so the row's other squares can be crossed out",
+            apply: () => {
+              targets.forEach(([rr, cc]) => { state.marks[rr][cc] = MARK; });
+              repaintAll(); clearConflicts();
+              setMessage("", "");
+            }
+          };
+      }
+      if (cols.size === 1) {
+        const c = cands[0][1];
+        const targets = [];
+        for (let r = 0; r < n; r++) if (avail(r, c) && state.regions[r][c] !== reg) targets.push([r, c]);
+        if (targets.length)
+          return {
+            premise: cands.map(([rr, cc]) => cellAt(rr, cc)),
+            target: targets.map(([rr, cc]) => cellAt(rr, cc)),
+            text: "All of the dashed region's remaining squares sit in one column — its crown will occupy it, so the column's other squares can be crossed out",
+            apply: () => {
+              targets.forEach(([rr, cc]) => { state.marks[rr][cc] = MARK; });
+              repaintAll(); clearConflicts();
+              setMessage("", "");
+            }
+          };
+      }
+    }
+    // 4) fallback: needs cross-region elimination
+    for (let r = 0; r < n; r++) {
+      const c = state.solution[r];
+      if (state.marks[r][c] !== CROWN)
+        return mkCrown([], r, c,
+          "No single-line rule fires here — this crown falls out of eliminating across several regions at once. It goes on the highlighted square");
+    }
+    return null;
   }
 
   function flash(cell) {
@@ -429,6 +525,7 @@
         state.auto[r][c] = false;
       }
     state.solved = false;
+    coach.reset();
     repaintAll();
     clearConflicts();
     setMessage("", "");
@@ -488,6 +585,8 @@
     els.statSolved = document.getElementById("stat-solved");
     els.statStreak = document.getElementById("stat-streak");
     els.statBest = document.getElementById("stat-best");
+
+    coach = window.HintCoach.create({ explain: explainHint, message: (t) => setMessage(t, "") });
 
     els.board.addEventListener("pointerdown", onPointerDown);
     els.board.addEventListener("pointermove", onPointerMove);

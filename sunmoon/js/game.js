@@ -11,6 +11,7 @@
   const els = {};
   let state = null; // { size, solution, givens, h, v, marks, mode, solved, elapsedMs, startTs }
   let timerId = null;
+  let coach = null; // explanatory-hint controller (window.HintCoach)
 
   const LS = {
     get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -40,6 +41,7 @@
     state = { size: p.size, solution: p.solution, givens: p.givens, h: p.h, v: p.v, marks: marks, mode: mode, solved: false, elapsedMs: 0 };
     els.modeLabel.textContent = mode === "daily" ? "Daily Challenge · " + todayKey() : "Unlimited · " + p.size + "×" + p.size;
     hideWinModal();
+    if (coach) coach.reset();
     cancelConflictTimer();
     buildBoard();
     setMessage("", "");
@@ -92,6 +94,7 @@
   function onBoardClick(e) {
     const cell = e.target.closest && e.target.closest(".sm-cell");
     if (!cell || state.solved) return;
+    coach.reset();
     const r = +cell.dataset.r, c = +cell.dataset.c;
     if (state.givens[r][c] !== EMPTY) { flash(cell); return; } // locked
     state.marks[r][c] = state.marks[r][c] === EMPTY ? SUN : state.marks[r][c] === SUN ? MOON : EMPTY;
@@ -192,19 +195,155 @@
 
   function hint() {
     if (state.solved) return;
-    // 1) flag a wrong filled cell
+    // a wrong filled cell trumps any teaching — point at it first
     for (let r = 0; r < state.size; r++)
       for (let c = 0; c < state.size; c++)
         if (state.givens[r][c] === EMPTY && state.marks[r][c] !== EMPTY && state.marks[r][c] !== state.solution[r][c]) {
+          coach.reset();
           flash(cellAt(r, c)); setMessage("That one's wrong — try clearing it.", "warn"); return;
         }
-    // 2) reveal one correct empty cell
-    for (let r = 0; r < state.size; r++)
-      for (let c = 0; c < state.size; c++)
-        if (state.marks[r][c] === EMPTY) {
-          state.marks[r][c] = state.solution[r][c]; paintCell(r, c); flash(cellAt(r, c));
-          scheduleConflicts(); checkWin(); setMessage("Revealed one cell. Keep going!", ""); return;
+    coach.press();
+  }
+
+  // ---- explanatory hints: find the next FORCED move and say why -----------
+  const GLYPH2 = { 0: "☀️", 1: "🌙" };
+
+  // rule-based propagation on a marks copy; returns true on contradiction
+  function propagateBad(g) {
+    const n = state.size, half = n / 2;
+    let changed = true, bad = false;
+    function set(r, c, v) {
+      if (g[r][c] === v) return;
+      if (g[r][c] !== EMPTY) { bad = true; return; }
+      g[r][c] = v; changed = true;
+    }
+    while (changed && !bad) {
+      changed = false;
+      for (let r = 0; r < n && !bad; r++) {
+        let z = 0, o = 0;
+        for (let c = 0; c < n; c++) { if (g[r][c] === 0) z++; else if (g[r][c] === 1) o++; }
+        if (z > half || o > half) bad = true;
+        else if (z === half) for (let c = 0; c < n; c++) { if (g[r][c] === EMPTY) set(r, c, 1); }
+        else if (o === half) for (let c = 0; c < n; c++) { if (g[r][c] === EMPTY) set(r, c, 0); }
+      }
+      for (let c = 0; c < n && !bad; c++) {
+        let z = 0, o = 0;
+        for (let r = 0; r < n; r++) { if (g[r][c] === 0) z++; else if (g[r][c] === 1) o++; }
+        if (z > half || o > half) bad = true;
+        else if (z === half) for (let r = 0; r < n; r++) { if (g[r][c] === EMPTY) set(r, c, 1); }
+        else if (o === half) for (let r = 0; r < n; r++) { if (g[r][c] === EMPTY) set(r, c, 0); }
+      }
+      const tri = (a, b, cc) => {
+        const va = g[a[0]][a[1]], vb = g[b[0]][b[1]], vc = g[cc[0]][cc[1]];
+        if (va !== EMPTY && va === vb && vb === vc) { bad = true; return; }
+        if (va !== EMPTY && va === vb && vc === EMPTY) set(cc[0], cc[1], 1 - va);
+        else if (vb !== EMPTY && vb === vc && va === EMPTY) set(a[0], a[1], 1 - vb);
+        else if (va !== EMPTY && va === vc && vb === EMPTY) set(b[0], b[1], 1 - va);
+      };
+      for (let r = 0; r < n && !bad; r++) for (let c = 0; c + 2 < n && !bad; c++) tri([r, c], [r, c + 1], [r, c + 2]);
+      for (let c = 0; c < n && !bad; c++) for (let r = 0; r + 2 < n && !bad; r++) tri([r, c], [r + 1, c], [r + 2, c]);
+      for (let r = 0; r < n && !bad; r++) {
+        for (let c = 0; c < n && !bad; c++) {
+          if (c < n - 1 && state.h[r][c]) {
+            const a = g[r][c], b = g[r][c + 1], same = state.h[r][c] === 1;
+            if (a !== EMPTY && b !== EMPTY && (a === b) !== same) bad = true;
+            else if (a !== EMPTY && b === EMPTY) set(r, c + 1, same ? a : 1 - a);
+            else if (b !== EMPTY && a === EMPTY) set(r, c, same ? b : 1 - b);
+          }
+          if (r < n - 1 && state.v[r][c]) {
+            const a = g[r][c], b = g[r + 1][c], same = state.v[r][c] === 1;
+            if (a !== EMPTY && b !== EMPTY && (a === b) !== same) bad = true;
+            else if (a !== EMPTY && b === EMPTY) set(r + 1, c, same ? a : 1 - a);
+            else if (b !== EMPTY && a === EMPTY) set(r, c, same ? b : 1 - b);
+          }
         }
+      }
+    }
+    return bad;
+  }
+
+  function explainHint() {
+    const n = state.size, m = state.marks, half = n / 2;
+    const val = (rc) => m[rc[0]][rc[1]];
+    const mk = (premise, target, text, moves) => ({
+      premise: premise.map((rc) => cellAt(rc[0], rc[1])),
+      target: target.map((rc) => cellAt(rc[0], rc[1])),
+      text: text,
+      apply: () => {
+        moves.forEach((mv) => { state.marks[mv[0]][mv[1]] = mv[2]; paintCell(mv[0], mv[1]); });
+        setMessage("", "");
+        scheduleConflicts(); checkWin();
+      }
+    });
+
+    // 1) no-three: a pair forces its ends; a gap between twins is forced
+    const trips = [];
+    for (let r = 0; r < n; r++) for (let c = 0; c + 2 < n; c++) trips.push([[r, c], [r, c + 1], [r, c + 2]]);
+    for (let c = 0; c < n; c++) for (let r = 0; r + 2 < n; r++) trips.push([[r, c], [r + 1, c], [r + 2, c]]);
+    for (const [A, B, C] of trips) {
+      const va = val(A), vb = val(B), vc = val(C);
+      if (va !== EMPTY && va === vb && vc === EMPTY)
+        return mk([A, B], [C], "Two " + GLYPH2[va] + " in a row — a third would break the no-three rule, so this cell must be " + GLYPH2[1 - va], [[C[0], C[1], 1 - va]]);
+      if (vb !== EMPTY && vb === vc && va === EMPTY)
+        return mk([B, C], [A], "Two " + GLYPH2[vb] + " in a row — a third would break the no-three rule, so this cell must be " + GLYPH2[1 - vb], [[A[0], A[1], 1 - vb]]);
+      if (va !== EMPTY && va === vc && vb === EMPTY)
+        return mk([A, C], [B], GLYPH2[va] + " on both sides — the cell between them must be " + GLYPH2[1 - va] + ", or you'd get three in a row", [[B[0], B[1], 1 - va]]);
+    }
+    // 2) balance: a line that already has all of one symbol
+    for (let r = 0; r < n; r++) {
+      const cnt = [0, 0], empt = [];
+      for (let c = 0; c < n; c++) { if (m[r][c] === EMPTY) empt.push([r, c]); else cnt[m[r][c]]++; }
+      for (const v of [0, 1])
+        if (cnt[v] === half && empt.length)
+          return mk(
+            Array.from({ length: n }, (_, c) => [r, c]).filter((rc) => val(rc) === v), empt,
+            "This row already has all " + half + " " + GLYPH2[v] + " — every remaining cell in it must be " + GLYPH2[1 - v],
+            empt.map((rc) => [rc[0], rc[1], 1 - v]));
+    }
+    for (let c = 0; c < n; c++) {
+      const cnt = [0, 0], empt = [];
+      for (let r = 0; r < n; r++) { if (m[r][c] === EMPTY) empt.push([r, c]); else cnt[m[r][c]]++; }
+      for (const v of [0, 1])
+        if (cnt[v] === half && empt.length)
+          return mk(
+            Array.from({ length: n }, (_, r) => [r, c]).filter((rc) => val(rc) === v), empt,
+            "This column already has all " + half + " " + GLYPH2[v] + " — every remaining cell in it must be " + GLYPH2[1 - v],
+            empt.map((rc) => [rc[0], rc[1], 1 - v]));
+    }
+    // 3) edge clues with one side known
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        if (c < n - 1 && state.h[r][c]) {
+          const a = m[r][c], b = m[r][c + 1], same = state.h[r][c] === 1;
+          if (a !== EMPTY && b === EMPTY) { const v = same ? a : 1 - a; return mk([[r, c]], [[r, c + 1]], "The " + (same ? "“=” means these two cells match" : "“✕” means these two cells differ") + " — so this one is " + GLYPH2[v], [[r, c + 1, v]]); }
+          if (b !== EMPTY && a === EMPTY) { const v = same ? b : 1 - b; return mk([[r, c + 1]], [[r, c]], "The " + (same ? "“=” means these two cells match" : "“✕” means these two cells differ") + " — so this one is " + GLYPH2[v], [[r, c, v]]); }
+        }
+        if (r < n - 1 && state.v[r][c]) {
+          const a = m[r][c], b = m[r + 1][c], same = state.v[r][c] === 1;
+          if (a !== EMPTY && b === EMPTY) { const v = same ? a : 1 - a; return mk([[r, c]], [[r + 1, c]], "The " + (same ? "“=” means these two cells match" : "“✕” means these two cells differ") + " — so this one is " + GLYPH2[v], [[r + 1, c, v]]); }
+          if (b !== EMPTY && a === EMPTY) { const v = same ? b : 1 - b; return mk([[r + 1, c]], [[r, c]], "The " + (same ? "“=” means these two cells match" : "“✕” means these two cells differ") + " — so this one is " + GLYPH2[v], [[r, c, v]]); }
+        }
+      }
+    }
+    // 4) one-step contradiction: test a value mentally, watch a line break
+    for (let r = 0; r < n; r++)
+      for (let c = 0; c < n; c++) {
+        if (m[r][c] !== EMPTY) continue;
+        for (const v of [0, 1]) {
+          const t = m.map((row) => row.slice());
+          t[r][c] = v;
+          if (propagateBad(t))
+            return mk([[r, c]], [[r, c]],
+              "No single rule fires here, but test " + GLYPH2[v] + " in your head: following the basic rules from it breaks a line. So it must be " + GLYPH2[1 - v],
+              [[r, c, 1 - v]]);
+        }
+      }
+    // 5) fallback (shouldn't happen on our boards)
+    for (let r = 0; r < n; r++)
+      for (let c = 0; c < n; c++)
+        if (m[r][c] === EMPTY)
+          return mk([], [[r, c]], "This one needs deeper case analysis — the answer here is " + GLYPH2[state.solution[r][c]], [[r, c, state.solution[r][c]]]);
+    return null;
   }
   function flash(cell) { if (!cell) return; cell.classList.add("flash"); setTimeout(() => cell.classList.remove("flash"), 900); }
 
@@ -213,7 +352,7 @@
     for (let r = 0; r < state.size; r++)
       for (let c = 0; c < state.size; c++)
         if (state.givens[r][c] === EMPTY) { state.marks[r][c] = EMPTY; paintCell(r, c); }
-    state.solved = false; cancelConflictTimer(); clearConflictMarks(); setMessage("", ""); startTimer();
+    state.solved = false; coach.reset(); cancelConflictTimer(); clearConflictMarks(); setMessage("", ""); startTimer();
   }
   function setMessage(text, kind) { els.message.textContent = text; els.message.className = "message" + (kind ? " message--" + kind : ""); }
 
@@ -246,6 +385,8 @@
     els.statSolved = document.getElementById("stat-solved");
     els.statStreak = document.getElementById("stat-streak");
     els.statBest = document.getElementById("stat-best");
+
+    coach = window.HintCoach.create({ explain: explainHint, message: (t) => setMessage(t, "") });
 
     els.board.addEventListener("click", onBoardClick);
     document.getElementById("btn-new").addEventListener("click", () => newGame("unlimited"));

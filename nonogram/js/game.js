@@ -12,6 +12,7 @@
   let state = null; // { size, solution, rowClues, colClues, marks, mode, solved, startTs, elapsedMs }
   let timerId = null;
   let tool = "fill";
+  let coach = null; // explanatory-hint controller (window.HintCoach)
 
   const LS = {
     get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -42,6 +43,7 @@
     state = { size: p.size, solution: p.solution, rowClues: p.rowClues, colClues: p.colClues, marks: marks, mode: mode, solved: false, elapsedMs: 0 };
     els.modeLabel.textContent = mode === "daily" ? "Daily Challenge · " + todayKey() : "Unlimited · " + p.size + "×" + p.size;
     if (mode === "daily") els.size.value = String(p.size);
+    if (coach) coach.reset();
     hideWinModal();
     buildBoard();
     setMessage("", "");
@@ -118,6 +120,7 @@
   function onPointerDown(e) {
     const cell = e.target.closest && e.target.closest(".ng-cell");
     if (!cell || state.solved) return;
+    coach.reset();
     e.preventDefault();
     const r = +cell.dataset.r, c = +cell.dataset.c;
     const wantX = tool === "x" || e.button === 2;
@@ -196,25 +199,73 @@
   function hint() {
     if (state.solved) return;
     const n = state.size;
-    // 1) flag a wrong cell
+    // a wrong cell trumps any teaching — point at it first
     for (let r = 0; r < n; r++)
       for (let c = 0; c < n; c++) {
         const m = state.marks[r][c], s = state.solution[r][c];
         if ((m === FILL && s !== 1) || (m === X && s === 1)) {
+          coach.reset();
           flash(cellAt(r, c)); setMessage("That one's wrong — try clearing it.", "warn"); return;
         }
       }
-    // 2) reveal one untouched cell
-    const empties = [];
+    coach.press();
+  }
+
+  // ---- explanatory hints: single-line deduction with its reasoning --------
+  function explainHint() {
+    const n = state.size;
+    // marks → solver alphabet: -1 unknown / 0 empty / 1 filled
+    const enc = (v) => (v === FILL ? 1 : v === X ? 0 : -1);
+
+    function tryLine(isRow, idx) {
+      const cells = [];
+      for (let k = 0; k < n; k++) cells.push(enc(isRow ? state.marks[idx][k] : state.marks[k][idx]));
+      const clues = isRow ? state.rowClues[idx] : state.colClues[idx];
+      const ded = window.Nonogram.lineDeduce(cells, clues);
+      if (!ded || !ded.length) return null;
+
+      const clueEl = (isRow ? els.rowclues : els.colclues).querySelector(
+        isRow ? '.ng-clue[data-r="' + idx + '"]' : '.ng-clue[data-c="' + idx + '"]');
+      const targets = ded.map(([k]) => (isRow ? cellAt(idx, k) : cellAt(k, idx)));
+      const fills = ded.filter(([, v]) => v === 1).length;
+      const xs = ded.length - fills;
+      const name = (isRow ? "Row " : "Column ") + (idx + 1);
+      let what;
+      if (fills && xs) what = fills + " must be filled and " + xs + " must stay empty";
+      else if (fills) what = (fills === 1 ? "it must be filled" : "all " + fills + " must be filled");
+      else what = (xs === 1 ? "it must stay empty — mark it ✕" : "all " + xs + " must stay empty — mark them ✕");
+      return {
+        premise: [clueEl],
+        target: targets,
+        text: name + ": slide the runs “" + clues.join(" ") + "” every way they still fit around what you've placed — the highlighted cells come out the same every time, so " + what,
+        apply: () => {
+          ded.forEach(([k, v]) => {
+            const r = isRow ? idx : k, c = isRow ? k : idx;
+            state.marks[r][c] = v === 1 ? FILL : X;
+            paintCell(r, c);
+          });
+          setMessage("", "");
+          refreshClueDone();
+          checkWin();
+        }
+      };
+    }
+
+    // prefer the line with the most immediate information (scan rows then cols)
+    for (let r = 0; r < n; r++) { const e = tryLine(true, r); if (e) return e; }
+    for (let c = 0; c < n; c++) { const e = tryLine(false, c); if (e) return e; }
+    // fallback (shouldn't happen on our line-solvable boards)
     for (let r = 0; r < n; r++)
       for (let c = 0; c < n; c++)
-        if (state.marks[r][c] === EMPTY) empties.push([r, c]);
-    if (!empties.length) return;
-    const [r, c] = empties[Math.floor(Math.random() * empties.length)];
-    state.marks[r][c] = state.solution[r][c] === 1 ? FILL : X;
-    paintCell(r, c); flash(cellAt(r, c));
-    refreshClueDone();
-    if (!checkWin()) setMessage("Revealed one cell. Keep going!", "");
+        if (state.marks[r][c] === EMPTY) {
+          const v = state.solution[r][c] === 1 ? FILL : X;
+          return {
+            premise: [], target: [cellAt(r, c)],
+            text: "No single line forces a cell right now — this one needs cross-referencing; here's its value",
+            apply: () => { state.marks[r][c] = v; paintCell(r, c); refreshClueDone(); checkWin(); }
+          };
+        }
+    return null;
   }
   function flash(cell) { if (!cell) return; cell.classList.add("flash"); setTimeout(() => cell.classList.remove("flash"), 900); }
 
@@ -223,6 +274,7 @@
     for (let r = 0; r < state.size; r++)
       for (let c = 0; c < state.size; c++) { state.marks[r][c] = EMPTY; paintCell(r, c); }
     state.solved = false; els.board.classList.remove("is-won");
+    coach.reset();
     refreshClueDone(); setMessage("", ""); startTimer();
   }
   function setMessage(text, kind) { els.message.textContent = text; els.message.className = "message" + (kind ? " message--" + kind : ""); }
@@ -268,6 +320,8 @@
     els.size = document.getElementById("size");
     els.toolFill = document.getElementById("tool-fill");
     els.toolX = document.getElementById("tool-x");
+
+    coach = window.HintCoach.create({ explain: explainHint, message: (t) => setMessage(t, "") });
 
     els.board.addEventListener("pointerdown", onPointerDown);
     els.board.addEventListener("pointermove", onPointerMove);

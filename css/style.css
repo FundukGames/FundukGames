@@ -34,6 +34,15 @@
 /* the hidden attribute must always win, even over .btn's display rules */
 [hidden] { display: none !important; }
 
+/* HintCoach — explanatory hints: premise cells dashed amber, conclusion green */
+.hintp { outline: 3px dashed var(--accent-deep) !important; outline-offset: -3px; position: relative; z-index: 3; }
+.hintt { outline: 3px solid var(--accent-2) !important; outline-offset: -3px; position: relative; z-index: 3; }
+.hs-island.hintp { outline: none !important; }
+.hs-island.hintt { outline: none !important; }
+.hs-island.hintp circle { stroke: var(--accent-deep); stroke-width: 3.6; stroke-dasharray: 5 3; }
+.hs-island.hintt circle { stroke: var(--accent-2); stroke-width: 3.6; }
+.ng-clue.hintp { outline: none !important; color: var(--accent-deep); text-decoration: underline; text-underline-offset: 3px; }
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {

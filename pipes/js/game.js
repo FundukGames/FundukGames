@@ -18,6 +18,7 @@
   const els = {};
   let state = null; // { size, base, rots, rots0, source, mode, solved, moves, startTs, elapsedMs }
   let timerId = null;
+  let coach = null; // explanatory-hint controller (window.HintCoach)
 
   const LS = {
     get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -48,6 +49,7 @@
     els.modeLabel.textContent = mode === "daily" ? "Daily Challenge · " + todayKey() : "Unlimited · " + p.size + "×" + p.size;
     if (mode === "daily") els.size.value = String(p.size);
     hideWinModal();
+    if (coach) coach.reset();
     buildBoard();
     refreshFlow();
     renderMoves();
@@ -166,21 +168,82 @@
 
   function hint() {
     if (state.solved) return;
+    coach.press();
+  }
+
+  // ---- explanatory hints: wall logic and neighbor logic, spelled out ------
+  function explainHint() {
     const n = state.size;
+    const el = (i) => els.board.children[i];
+    const variants = (b) => {
+      const set = [];
+      for (let k = 0; k < 4; k++) { const v = window.Pipes.rot(b, k); if (!set.includes(v)) set.push(v); }
+      return set;
+    };
+    // step 1: orientations that keep every end on the board
+    const sets = state.base.map((b, i) => {
+      const r = Math.floor(i / n), c = i % n;
+      return variants(b).filter((m) =>
+        !(r === 0 && (m & N)) && !(r === n - 1 && (m & S)) && !(c === 0 && (m & W)) && !(c === n - 1 && (m & E)));
+    });
+    const wallForced = sets.map((s) => s.length === 1);
+    // step 2: arc consistency — an orientation must be answerable by every neighbor
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (let i = 0; i < n * n; i++) {
+        const r = Math.floor(i / n), c = i % n;
+        const keep = sets[i].filter((m) => {
+          for (const d of DIRS) {
+            const rr = r + d.dr, cc = c + d.dc;
+            if (rr < 0 || rr >= n || cc < 0 || cc >= n) continue;
+            const j = rr * n + cc;
+            const iHas = !!(m & d.bit);
+            if (!sets[j].some((mj) => !!(mj & d.opp) === iHas)) return false;
+          }
+          return true;
+        });
+        if (keep.length !== sets[i].length) { sets[i] = keep; changed = true; }
+      }
+    }
+    // teach the first forced piece that isn't in position yet
+    for (let i = 0; i < n * n; i++) {
+      if (sets[i].length !== 1 || conn(i) === sets[i][0]) continue;
+      const want = sets[i][0];
+      let delta = 0;
+      while (window.Pipes.rot(state.base[i], state.rots[i] + delta) !== want) delta++;
+      const apply = () => { setMessage("", ""); rotate(i, delta); };
+      if (wallForced[i])
+        return {
+          premise: [], target: [el(i)],
+          text: "Pipe ends can never face the board edge — only one rotation of this piece keeps all of its ends inside",
+          apply: apply
+        };
+      const r = Math.floor(i / n), c = i % n;
+      const nbEls = [];
+      for (const d of DIRS) {
+        const rr = r + d.dr, cc = c + d.dc;
+        if (rr >= 0 && rr < n && cc >= 0 && cc < n) nbEls.push(el(rr * n + cc));
+      }
+      return {
+        premise: nbEls, target: [el(i)],
+        text: "Look at what the dashed neighbors can still offer or refuse on their shared sides — matching all of them leaves this piece exactly one legal rotation",
+        apply: apply
+      };
+    }
+    // fallback: whole-network reasoning
     for (let i = 0; i < n * n; i++) {
       if (conn(i) !== state.base[i]) {
         let k = 0;
         while (window.Pipes.rot(state.base[i], state.rots[i] + k) !== state.base[i]) k++;
-        state.rots[i] += k;
-        const svg = els.board.children[i].firstChild;
-        svg.style.setProperty("--rot", state.rots[i]);
-        flash(els.board.children[i]);
-        const res = refreshFlow();
-        setMessage("Turned one piece into place. Keep going!", "");
-        if (res.litCount === n * n && res.dangling === 0) win();
-        return;
+        return {
+          premise: [], target: [el(i)],
+          text: "No single piece is forced by its walls or neighbors right now — this one follows from the big picture (one connected network, no loops). Here's its correct orientation",
+          apply: () => { setMessage("", ""); rotate(i, k); }
+        };
       }
     }
+    return null;
   }
   function flash(cell) { if (!cell) return; cell.classList.add("flash"); setTimeout(() => cell.classList.remove("flash"), 900); }
 
@@ -188,6 +251,7 @@
     if (!state) return;
     state.rots = state.rots0.slice();
     state.moves = 0; state.solved = false;
+    coach.reset();
     els.board.classList.remove("is-won");
     for (let i = 0; i < state.size * state.size; i++)
       els.board.children[i].firstChild.style.setProperty("--rot", state.rots[i]);
@@ -234,12 +298,13 @@
   function onClick(e) {
     const cell = e.target.closest && e.target.closest(".pp-cell");
     if (!cell || lpFired) return;
+    coach.reset();
     rotate(+cell.dataset.i, 1);
   }
   function onContext(e) {
     e.preventDefault();
     const cell = e.target.closest && e.target.closest(".pp-cell");
-    if (cell) rotate(+cell.dataset.i, -1);
+    if (cell) { coach.reset(); rotate(+cell.dataset.i, -1); }
   }
 
   function boot() {
@@ -253,6 +318,8 @@
     els.statStreak = document.getElementById("stat-streak");
     els.statBest = document.getElementById("stat-best");
     els.size = document.getElementById("size");
+
+    coach = window.HintCoach.create({ explain: explainHint, message: (t) => setMessage(t, "") });
 
     els.board.addEventListener("click", onClick);
     els.board.addEventListener("contextmenu", onContext);

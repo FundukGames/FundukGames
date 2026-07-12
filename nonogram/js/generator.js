@@ -148,4 +148,5 @@
   window.Nonogram = window.Nonogram || {};
   window.Nonogram.generate = generate;
   window.Nonogram.dailySeed = dailySeed;
+  window.Nonogram.lineDeduce = lineDeduce; // reused by the explanatory hints
 })();

@@ -13,6 +13,7 @@
   const els = {};
   let state = null; // { size, layout, clues, solution:Set, marks, mode, solved, startTs, elapsedMs }
   let timerId = null;
+  let coach = null; // explanatory-hint controller (window.HintCoach)
 
   const LS = {
     get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -47,6 +48,7 @@
     els.modeLabel.textContent = mode === "daily" ? "Daily Challenge · " + todayKey() : "Unlimited · " + p.size + "×" + p.size;
     if (mode === "daily") els.size.value = String(p.size);
     hideWinModal();
+    if (coach) coach.reset();
     cancelConflictTimer();
     buildBoard();
     refreshLight();
@@ -122,6 +124,7 @@
   function onBoardClick(e) {
     const cell = e.target.closest && e.target.closest("button.ak-cell");
     if (!cell || state.solved) return;
+    coach.reset();
     const i = +cell.dataset.i;
     state.marks[i] = state.marks[i] === EMPTY ? BULB : state.marks[i] === BULB ? DOT : EMPTY;
     refreshLight();
@@ -213,20 +216,96 @@
   function hint() {
     if (state.solved) return;
     const n = state.size;
-    // 1) flag a wrong bulb
+    // a wrong bulb trumps any teaching — point at it first
     for (let i = 0; i < n * n; i++)
       if (state.marks[i] === BULB && !state.solution.has(i)) {
+        coach.reset();
         flash(els.board.children[i]); setMessage("That bulb is wrong — try clearing it.", "warn"); return;
       }
-    // 2) reveal one missing solution bulb
+    coach.press();
+  }
+
+  // ---- explanatory hints: name the rule that forces the move --------------
+  function explainHint() {
+    const n = state.size;
+    const el = (i) => els.board.children[i];
+    const isWhite = (i) => state.layout[Math.floor(i / n)][i % n] !== WALL;
+    const lit = new Array(n * n).fill(false);
+    for (let i = 0; i < n * n; i++)
+      if (state.marks[i] === BULB) { lit[i] = true; for (const j of sight(i)) lit[j] = true; }
+
+    const placeBulbs = (cells) => () => {
+      setMessage("", "");
+      cells.forEach((i) => { if (state.marks[i] === EMPTY) state.marks[i] = BULB; });
+      refreshLight(); scheduleConflicts(); checkWin();
+    };
+    const placeDots = (cells) => () => {
+      setMessage("", "");
+      cells.forEach((i) => { if (state.marks[i] === EMPTY) state.marks[i] = DOT; });
+      refreshLight();
+    };
+
+    // clue rules
+    for (let r = 0; r < n; r++) {
+      for (let c = 0; c < n; c++) {
+        if (state.layout[r][c] !== WALL || state.clues[r][c] < 0) continue;
+        const clue = state.clues[r][c], wallIdx = r * n + c;
+        const adj = [];
+        for (const [dr, dc] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+          const rr = r + dr, cc = c + dc;
+          if (rr >= 0 && rr < n && cc >= 0 && cc < n && state.layout[rr][cc] !== WALL) adj.push(rr * n + cc);
+        }
+        let bulbs = 0;
+        const bulbEls = [];
+        for (const i of adj) if (state.marks[i] === BULB) { bulbs++; bulbEls.push(el(i)); }
+        const dotAble = adj.filter((i) => state.marks[i] === EMPTY);
+        const bulbAble = adj.filter((i) => state.marks[i] === EMPTY && !lit[i]);
+        // A) satisfied (or 0) → dot the remaining neighbors
+        if (bulbs === clue && dotAble.length)
+          return {
+            premise: [el(wallIdx)].concat(bulbEls),
+            target: dotAble.map(el),
+            text: clue === 0
+              ? "A 0 wall allows no bulbs beside it — dot all of its neighbors"
+              : "This " + clue + " already touches its " + clue + " bulb" + (clue > 1 ? "s" : "") + " — no other neighbor may hold one. Dot them",
+            apply: placeDots(dotAble)
+          };
+        // B) needs every remaining spot → all bulbs
+        if (bulbs < clue && bulbs + bulbAble.length === clue)
+          return {
+            premise: [el(wallIdx)].concat(bulbEls),
+            target: bulbAble.map(el),
+            text: "This " + clue + " still needs " + (clue - bulbs) + " bulb" + (clue - bulbs > 1 ? "s" : "") + " and only " + bulbAble.length + " neighbor" + (bulbAble.length > 1 ? "s" : "") + " can still take one — every highlighted cell must be a bulb",
+            apply: placeBulbs(bulbAble)
+          };
+      }
+    }
+    // C) lonely cell: only one spot can still light it
+    for (let i = 0; i < n * n; i++) {
+      if (!isWhite(i) || lit[i] || state.marks[i] === BULB) continue;
+      const cands = [];
+      if (state.marks[i] === EMPTY) cands.push(i);
+      for (const j of sight(i)) if (state.marks[j] === EMPTY && !lit[j]) cands.push(j);
+      if (cands.length === 1)
+        return {
+          premise: [el(i)].concat(sight(i).map(el)),
+          target: [el(cands[0])],
+          text: cands[0] === i
+            ? "Scan this cell's row and column: nothing there can light it anymore — it must hold the bulb itself"
+            : "The green cell is the last spot that can still light the dashed one — a bulb is forced there",
+          apply: placeBulbs([cands[0]])
+        };
+    }
+    // D) fallback: needs deeper case analysis
     const missing = [];
     state.solution.forEach((i) => { if (state.marks[i] !== BULB) missing.push(i); });
-    if (!missing.length) return;
+    if (!missing.length) return null;
     const i = missing[Math.floor(Math.random() * missing.length)];
-    state.marks[i] = BULB;
-    refreshLight(); flash(els.board.children[i]);
-    scheduleConflicts();
-    if (!checkWin()) setMessage("Placed one bulb for you. Keep going!", "");
+    return {
+      premise: [], target: [el(i)],
+      text: "No single rule fires right now — this spot takes case analysis. A bulb belongs on the highlighted cell",
+      apply: placeBulbs([i])
+    };
   }
   function flash(cell) { if (!cell) return; cell.classList.add("flash"); setTimeout(() => cell.classList.remove("flash"), 900); }
 
@@ -235,6 +314,7 @@
     state.marks.fill(EMPTY);
     state.solved = false;
     els.board.classList.remove("is-won");
+    coach.reset();
     refreshLight();
     cancelConflictTimer(); clearConflictMarks(); setMessage("", ""); startTimer();
   }
@@ -271,6 +351,8 @@
     els.statStreak = document.getElementById("stat-streak");
     els.statBest = document.getElementById("stat-best");
     els.size = document.getElementById("size");
+
+    coach = window.HintCoach.create({ explain: explainHint, message: (t) => setMessage(t, "") });
 
     els.board.addEventListener("click", onBoardClick);
     document.getElementById("btn-new").addEventListener("click", () => newGame("unlimited"));

@@ -9,6 +9,7 @@
   const els = {};
   let state = null; // { size, solution, givens, h, v, marks, mode, solved, startTs, elapsedMs, sel }
   let timerId = null;
+  let coach = null; // explanatory-hint controller (window.HintCoach)
 
   const LS = {
     get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -43,6 +44,7 @@
       els.modeLabel.textContent = mode === "daily" ? "Daily Challenge · " + todayKey() : "Unlimited · " + p.size + "×" + p.size;
       if (mode === "daily") els.size.value = String(p.size);
       hideWinModal();
+      if (coach) coach.reset();
       cancelConflictTimer();
       buildBoard();
       buildPad();
@@ -135,6 +137,7 @@
 
   function enter(v) {
     if (!state.sel || state.solved) return;
+    coach.reset();
     const [r, c] = state.sel;
     if (state.givens[r][c]) { flash(cellAt(r, c)); return; }
     state.marks[r][c] = v === state.marks[r][c] ? 0 : v;
@@ -220,21 +223,150 @@
 
   function hint() {
     if (state.solved) return;
+    // a wrong entry trumps any teaching — point at it first
     for (let r = 0; r < state.size; r++)
       for (let c = 0; c < state.size; c++)
         if (!state.givens[r][c] && state.marks[r][c] && state.marks[r][c] !== state.solution[r][c]) {
+          coach.reset();
           flash(cellAt(r, c)); setMessage("That one's wrong — try clearing it.", "warn"); return;
         }
-    const empties = [];
-    for (let r = 0; r < state.size; r++)
-      for (let c = 0; c < state.size; c++)
-        if (!state.marks[r][c]) empties.push([r, c]);
-    if (!empties.length) return;
-    const [r, c] = empties[Math.floor(Math.random() * empties.length)];
-    state.marks[r][c] = state.solution[r][c];
-    paintCell(r, c); flash(cellAt(r, c));
-    scheduleConflicts();
-    if (!checkWin()) setMessage("Revealed one cell. Keep going!", "");
+    coach.press();
+  }
+
+  // ---- explanatory hints: candidates, signs and singles, spelled out ------
+  function buildCands() {
+    const n = state.size, m = state.marks, cd = [];
+    for (let r = 0; r < n; r++) {
+      cd.push([]);
+      for (let c = 0; c < n; c++) {
+        if (m[r][c]) { cd[r].push([m[r][c]]); continue; }
+        const used = new Set();
+        for (let i = 0; i < n; i++) { if (m[r][i]) used.add(m[r][i]); if (m[i][c]) used.add(m[i][c]); }
+        cd[r].push(Array.from({ length: n }, (_, i) => i + 1).filter((v) => !used.has(v)));
+      }
+    }
+    return cd;
+  }
+  // singles + inequality fixpoint; false on contradiction
+  function pruneAll(cd) {
+    const n = state.size;
+    let ch = true;
+    while (ch) {
+      ch = false;
+      for (let r = 0; r < n; r++)
+        for (let c = 0; c < n; c++) {
+          const s = cd[r][c];
+          if (!s.length) return false;
+          if (s.length !== 1) continue;
+          const v = s[0];
+          for (let i = 0; i < n; i++) {
+            if (i !== c) { const t = cd[r][i], k = t.indexOf(v); if (k >= 0) { if (t.length === 1) return false; t.splice(k, 1); ch = true; } }
+            if (i !== r) { const t = cd[i][c], k = t.indexOf(v); if (k >= 0) { if (t.length === 1) return false; t.splice(k, 1); ch = true; } }
+          }
+        }
+      for (let r = 0; r < n; r++)
+        for (let c = 0; c < n; c++) {
+          const doP = (aR, aC, bR, bC) => { // a < b
+            const A = cd[aR][aC], B = cd[bR][bC];
+            const maxB = Math.max.apply(null, B), minA = Math.min.apply(null, A);
+            const A2 = A.filter((x) => x < maxB), B2 = B.filter((x) => x > minA);
+            if (A2.length !== A.length) { cd[aR][aC] = A2; ch = true; }
+            if (B2.length !== B.length) { cd[bR][bC] = B2; ch = true; }
+            return A2.length && B2.length;
+          };
+          if (c < n - 1 && state.h[r][c] && !(state.h[r][c] === 1 ? doP(r, c, r, c + 1) : doP(r, c + 1, r, c))) return false;
+          if (r < n - 1 && state.v[r][c] && !(state.v[r][c] === 1 ? doP(r, c, r + 1, c) : doP(r + 1, c, r, c))) return false;
+        }
+    }
+    return true;
+  }
+  function explainHint() {
+    const n = state.size, m = state.marks;
+    const mk = (premise, target, text, r, c, v) => ({
+      premise: premise, target: target, text: text,
+      apply: () => {
+        state.marks[r][c] = v;
+        paintCell(r, c);
+        setMessage("", "");
+        repaintSelection();
+        scheduleConflicts(); checkWin();
+      }
+    });
+    const lineEls = (isRow, idx, exceptC) => {
+      const out = [];
+      for (let k = 0; k < n; k++) {
+        if (k === exceptC) continue;
+        out.push(isRow ? cellAt(idx, k) : cellAt(k, idx));
+      }
+      return out;
+    };
+
+    const cd = buildCands();
+    if (!pruneAll(cd)) return null; // shouldn't happen with correct entries
+
+    // 1) naked single
+    for (let r = 0; r < n; r++)
+      for (let c = 0; c < n; c++)
+        if (!m[r][c] && cd[r][c].length === 1) {
+          const v = cd[r][c][0];
+          // was it row/column alone, or did the signs do the squeezing?
+          const used = new Set();
+          for (let i = 0; i < n; i++) { if (m[r][i]) used.add(m[r][i]); if (m[i][c]) used.add(m[i][c]); }
+          const plain = n - used.size === 1;
+          const premise = [];
+          for (let i = 0; i < n; i++) {
+            if (m[r][i] && i !== c) premise.push(cellAt(r, i));
+            if (m[i][c] && i !== r) premise.push(cellAt(i, c));
+          }
+          return mk(premise, [cellAt(r, c)],
+            plain
+              ? "Its row and column already contain every other value — only " + v + " is left for this cell"
+              : "Between the numbers already in its row and column and the ‹ › signs squeezing it, only " + v + " remains possible here",
+            r, c, v);
+        }
+    // 2) hidden single (row, then column)
+    for (let r = 0; r < n; r++)
+      for (let v = 1; v <= n; v++) {
+        const spots = [];
+        for (let c = 0; c < n; c++) if (!m[r][c] && cd[r][c].includes(v)) spots.push(c);
+        if (spots.length === 1 && !m[r].includes(v))
+          return mk(lineEls(true, r, spots[0]), [cellAt(r, spots[0])],
+            "Scan this row for " + v + ": the signs and the other columns rule it out everywhere else — it can only live here",
+            r, spots[0], v);
+      }
+    for (let c = 0; c < n; c++)
+      for (let v = 1; v <= n; v++) {
+        const spots = [];
+        let present = false;
+        for (let r = 0; r < n; r++) { if (m[r][c] === v) present = true; if (!m[r][c] && cd[r][c].includes(v)) spots.push(r); }
+        if (spots.length === 1 && !present)
+          return mk(lineEls(false, c, spots[0]), [cellAt(spots[0], c)],
+            "Scan this column for " + v + ": it's ruled out everywhere else — it can only live here",
+            spots[0], c, v);
+      }
+    // 3) one-step contradiction
+    for (let r = 0; r < n; r++)
+      for (let c = 0; c < n; c++) {
+        if (m[r][c] || cd[r][c].length !== 2) continue;
+        for (const v of cd[r][c]) {
+          const t = cd.map((row) => row.map((s) => s.slice()));
+          t[r][c] = [v];
+          if (!pruneAll(t)) {
+            const other = cd[r][c].find((x) => x !== v);
+            return mk([cellAt(r, c)], [cellAt(r, c)],
+              "This cell is down to " + cd[r][c].join(" or ") + ". Test " + v + ": following the signs and singles, some cell runs out of options — so it must be " + other,
+              r, c, other);
+          }
+        }
+      }
+    // 4) fallback
+    for (let r = 0; r < n; r++)
+      for (let c = 0; c < n; c++)
+        if (!m[r][c])
+          return mk([], [cellAt(r, c)],
+            "This one needs deeper case analysis — the answer here is " + state.solution[r][c],
+            r, c, state.solution[r][c]);
+    return null;
   }
   function flash(cell) { if (!cell) return; cell.classList.add("flash"); setTimeout(() => cell.classList.remove("flash"), 900); }
 
@@ -244,6 +376,7 @@
       for (let c = 0; c < state.size; c++)
         if (!state.givens[r][c]) { state.marks[r][c] = 0; paintCell(r, c); }
     state.solved = false;
+    coach.reset();
     repaintSelection();
     cancelConflictTimer(); clearConflictMarks(); setMessage("", ""); startTimer();
   }
@@ -294,6 +427,8 @@
     els.statStreak = document.getElementById("stat-streak");
     els.statBest = document.getElementById("stat-best");
     els.size = document.getElementById("size");
+
+    coach = window.HintCoach.create({ explain: explainHint, message: (t) => setMessage(t, "") });
 
     els.board.addEventListener("click", onBoardClick);
     window.addEventListener("keydown", onKey);

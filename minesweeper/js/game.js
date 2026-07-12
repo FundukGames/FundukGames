@@ -18,6 +18,7 @@
   let state = null; // { w, h, mines, mine, numbers, cells, mode, diff, phase, startTs, elapsedMs, pending }
   let timerId = null;
   let tool = "dig";
+  let coach = null; // explanatory-hint controller (window.HintCoach)
 
   const LS = {
     get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -50,6 +51,7 @@
     };
     els.modeLabel.textContent = mode === "daily" ? "Daily · " + todayKey() : d.label;
     if (mode === "daily") els.diff.value = "medium";
+    if (coach) coach.reset();
     stopTimer();
     els.timer.textContent = "0:00";
     hideModal();
@@ -234,22 +236,107 @@
   function hint() {
     if (state.phase === "won" || state.phase === "lost") return;
     if (!state.mine) { setMessage("Dig your first cell first — it's always safe!", ""); return; }
-    // 1) a wrong flag?
+    // a wrong flag poisons every deduction — point at it first
     for (let i = 0; i < state.w * state.h; i++)
       if (state.cells[i] === FLAG && !state.mine[i]) {
+        coach.reset();
         flash(cellEl(i)); setMessage("That flag is wrong — remove it.", "warn"); return;
       }
-    // 2) reveal a safe covered cell next to the opened area (or any safe cell)
-    const frontier = [], rest = [];
-    for (let i = 0; i < state.w * state.h; i++) {
-      if (state.cells[i] !== COVERED || state.mine[i]) continue;
-      (neighbors(i).some((j) => state.cells[j] === OPEN) ? frontier : rest).push(i);
+    coach.press();
+  }
+
+  // ---- explanatory hints: name the pattern that forces the move -----------
+  function explainHint() {
+    const size = state.w * state.h;
+    const cons = [];
+    for (let i = 0; i < size; i++) {
+      if (state.cells[i] !== OPEN || state.numbers[i] <= 0) continue;
+      const cov = [], flags = [];
+      for (const j of neighbors(i)) {
+        if (state.cells[j] === COVERED) cov.push(j);
+        else if (state.cells[j] === FLAG) flags.push(j);
+      }
+      if (cov.length) cons.push({ i: i, cov: cov, flags: flags, need: state.numbers[i] - flags.length });
     }
-    const pool = frontier.length ? frontier : rest;
-    if (!pool.length) return;
+    const openAll = (cells) => () => {
+      setMessage("", "");
+      for (const j of cells) if (state.cells[j] === COVERED) { openCell(j); if (state.phase !== "playing") return; }
+    };
+    const flagAll = (cells) => () => {
+      setMessage("", "");
+      for (const j of cells) if (state.cells[j] === COVERED) { state.cells[j] = FLAG; paintCell(j); }
+      renderCounter();
+    };
+
+    // A) satisfied number → its other neighbors are safe
+    for (const c of cons)
+      if (c.need === 0)
+        return {
+          premise: [cellEl(c.i)].concat(c.flags.map(cellEl)),
+          target: c.cov.map(cellEl),
+          text: "This " + state.numbers[c.i] + " already touches all " + state.numbers[c.i] + " of its mines (the flags) — every other neighbor is guaranteed safe",
+          apply: openAll(c.cov)
+        };
+    // B) tight fit → every covered neighbor is a mine
+    for (const c of cons)
+      if (c.need === c.cov.length)
+        return {
+          premise: [cellEl(c.i)].concat(c.flags.map(cellEl)),
+          target: c.cov.map(cellEl),
+          text: "This " + state.numbers[c.i] + " still needs " + c.need + " mine" + (c.need > 1 ? "s" : "") + " and has exactly " + c.cov.length + " covered neighbor" + (c.cov.length > 1 ? "s" : "") + " — all of them must be mines. Flag them",
+          apply: flagAll(c.cov)
+        };
+    // C) subset reasoning (the classic 1-2 patterns)
+    for (const A of cons)
+      for (const B of cons) {
+        if (A === B || A.cov.length >= B.cov.length) continue;
+        if (!A.cov.every((x) => B.cov.includes(x))) continue;
+        const extra = B.cov.filter((x) => !A.cov.includes(x));
+        if (!extra.length) continue;
+        if (B.need === A.need)
+          return {
+            premise: [cellEl(A.i), cellEl(B.i)],
+            target: extra.map(cellEl),
+            text: "Compare these two numbers: the " + state.numbers[A.i] + "'s remaining mine" + (A.need > 1 ? "s" : "") + " must sit among the cells it shares with the " + state.numbers[B.i] + " — that already satisfies the " + state.numbers[B.i] + ", so its extra cells are safe",
+            apply: openAll(extra)
+          };
+        if (B.need - A.need === extra.length)
+          return {
+            premise: [cellEl(A.i), cellEl(B.i)],
+            target: extra.map(cellEl),
+            text: "Compare these two numbers: even if the " + state.numbers[A.i] + " uses every shared cell, the " + state.numbers[B.i] + " still needs " + extra.length + " more mine" + (extra.length > 1 ? "s" : "") + " — the highlighted cells are all mines. Flag them",
+            apply: flagAll(extra)
+          };
+      }
+    // D) global mine count
+    let covered = [], flagsTotal = 0;
+    for (let i = 0; i < size; i++) {
+      if (state.cells[i] === COVERED) covered.push(i);
+      else if (state.cells[i] === FLAG) flagsTotal++;
+    }
+    const left = state.mines - flagsTotal;
+    if (covered.length && left === 0)
+      return {
+        premise: [], target: covered.map(cellEl),
+        text: "The 🚩 counter reads 0 — every mine is already flagged, so all remaining covered cells are safe",
+        apply: openAll(covered)
+      };
+    if (covered.length && left === covered.length)
+      return {
+        premise: [], target: covered.map(cellEl),
+        text: "Exactly " + left + " mine" + (left > 1 ? "s" : "") + " left and exactly " + covered.length + " covered cell" + (covered.length > 1 ? "s" : "") + " — they're all mines. Flag them",
+        apply: flagAll(covered)
+      };
+    // E) fallback: no local pattern (rare mid-game state) — hand over one safe cell
+    const frontier = covered.filter((i) => !state.mine[i] && neighbors(i).some((j) => state.cells[j] === OPEN));
+    const pool = frontier.length ? frontier : covered.filter((i) => !state.mine[i]);
+    if (!pool.length) return null;
     const i = pool[Math.floor(Math.random() * pool.length)];
-    openCell(i);
-    if (state.phase === "playing") { flash(cellEl(i)); setMessage("Opened one safe cell. Keep going!", ""); }
+    return {
+      premise: [], target: [cellEl(i)],
+      text: "No single pattern fires from here — this needs combining several numbers. This highlighted cell is safe",
+      apply: openAll([i])
+    };
   }
   function flash(el) { if (!el) return; el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 900); }
 
@@ -310,6 +397,7 @@
   function onClick(e) {
     const cell = e.target.closest && e.target.closest(".ms-cell");
     if (!cell || lpFired) return;
+    coach.reset();
     const i = +cell.dataset.i;
     if (tool === "flag" && state.cells[i] !== OPEN) toggleFlag(i);
     else dig(i);
@@ -317,7 +405,7 @@
   function onContext(e) {
     e.preventDefault();
     const cell = e.target.closest && e.target.closest(".ms-cell");
-    if (cell) toggleFlag(+cell.dataset.i);
+    if (cell) { coach.reset(); toggleFlag(+cell.dataset.i); }
   }
 
   function boot() {
@@ -332,6 +420,8 @@
     els.diff = document.getElementById("difficulty");
     els.toolDig = document.getElementById("tool-dig");
     els.toolFlag = document.getElementById("tool-flag");
+
+    coach = window.HintCoach.create({ explain: explainHint, message: (t) => setMessage(t, "") });
 
     els.board.addEventListener("click", onClick);
     els.board.addEventListener("contextmenu", onContext);

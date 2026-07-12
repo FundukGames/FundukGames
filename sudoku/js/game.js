@@ -8,6 +8,7 @@
   const els = {};
   let state = null; // { solution, puzzle, marks, difficulty, mode, solved, elapsedMs, sel, startTs }
   let timerId = null;
+  let coach = null; // explanatory-hint controller (window.HintCoach)
 
   const LS = {
     get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -40,6 +41,7 @@
     };
     els.modeLabel.textContent = mode === "daily" ? "Daily Challenge · " + todayKey() : "Unlimited · " + difficulty;
     hideWinModal();
+    if (coach) coach.reset();
     buildBoard();
     setMessage("", "");
     els.timer.textContent = "0:00";
@@ -86,6 +88,7 @@
 
   function place(v) {
     if (state.solved || !state.sel) return;
+    coach.reset();
     const { r, c } = state.sel;
     if (state.puzzle[r][c] !== 0) return; // given, locked
     state.marks[r][c] = v;
@@ -146,28 +149,159 @@
 
   function hint() {
     if (state.solved) return;
-    // flag a wrong filled cell first
+    // a wrong entry trumps any teaching — point at it first
     for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++)
       if (state.puzzle[r][c] === 0 && state.marks[r][c] !== 0 && state.marks[r][c] !== state.solution[r][c]) {
+        coach.reset();
         flash(cellAt(r, c)); setMessage("That number is wrong — try clearing it.", "warn"); return;
       }
-    // reveal selected empty cell, else first empty
-    let target = null;
-    if (state.sel && state.marks[state.sel.r][state.sel.c] === 0) target = state.sel;
-    if (!target) { for (let r = 0; r < 9 && !target; r++) for (let c = 0; c < 9; c++) if (state.marks[r][c] === 0) { target = { r: r, c: c }; break; } }
-    if (target) {
-      state.marks[target.r][target.c] = state.solution[target.r][target.c];
-      paintCell(target.r, target.c); flash(cellAt(target.r, target.c));
-      updateHighlights(); clearConflicts(); checkWin();
-      setMessage("Revealed one cell. Keep going!", "");
+    coach.press();
+  }
+
+  // ---- explanatory hints: name the technique that forces the digit --------
+  const UNITS = (() => {
+    const out = [];
+    for (let r = 0; r < 9; r++) out.push({ kind: "row", cells: Array.from({ length: 9 }, (_, c) => [r, c]) });
+    for (let c = 0; c < 9; c++) out.push({ kind: "column", cells: Array.from({ length: 9 }, (_, r) => [r, c]) });
+    for (let br = 0; br < 9; br += 3)
+      for (let bc = 0; bc < 9; bc += 3) {
+        const cells = [];
+        for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) cells.push([br + i, bc + j]);
+        out.push({ kind: "box", cells: cells });
+      }
+    return out;
+  })();
+
+  function peerCands() {
+    const m = state.marks, cd = [];
+    for (let r = 0; r < 9; r++) {
+      cd.push([]);
+      for (let c = 0; c < 9; c++) {
+        if (m[r][c]) { cd[r].push([m[r][c]]); continue; }
+        const used = new Set();
+        for (let i = 0; i < 9; i++) { if (m[r][i]) used.add(m[r][i]); if (m[i][c]) used.add(m[i][c]); }
+        const br = r - (r % 3), bc = c - (c % 3);
+        for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) if (m[br + i][bc + j]) used.add(m[br + i][bc + j]);
+        cd[r].push(Array.from({ length: 9 }, (_, i) => i + 1).filter((v) => !used.has(v)));
+      }
     }
+    return cd;
+  }
+  // locked candidates (pointing/claiming) + naked pairs, iterated
+  function advancedEliminate(cd) {
+    let ch = true;
+    while (ch) {
+      ch = false;
+      const remove = (r, c, v) => {
+        const k = cd[r][c].indexOf(v);
+        if (k >= 0) { cd[r][c].splice(k, 1); ch = true; }
+      };
+      for (const u of UNITS) {
+        for (let v = 1; v <= 9; v++) {
+          const spots = u.cells.filter(([r, c]) => !state.marks[r][c] && cd[r][c].includes(v));
+          if (!spots.length) continue;
+          if (u.kind === "box") { // pointing: all in one row/col → clear the rest of that line
+            const rows = new Set(spots.map(([r]) => r)), cols = new Set(spots.map(([, c]) => c));
+            if (rows.size === 1) { const r = spots[0][0]; for (let c = 0; c < 9; c++) if (!u.cells.some(([ur, uc]) => ur === r && uc === c) && !state.marks[r][c]) remove(r, c, v); }
+            if (cols.size === 1) { const c = spots[0][1]; for (let r = 0; r < 9; r++) if (!u.cells.some(([ur, uc]) => ur === r && uc === c) && !state.marks[r][c]) remove(r, c, v); }
+          } else { // claiming: all in one box → clear the rest of that box
+            const boxes = new Set(spots.map(([r, c]) => Math.floor(r / 3) * 3 + Math.floor(c / 3)));
+            if (boxes.size === 1) {
+              const [r0, c0] = spots[0], br = r0 - (r0 % 3), bc = c0 - (c0 % 3);
+              for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) {
+                const rr = br + i, cc = bc + j;
+                if (!u.cells.some(([ur, uc]) => ur === rr && uc === cc) && !state.marks[rr][cc]) remove(rr, cc, v);
+              }
+            }
+          }
+        }
+        // naked pairs
+        const empties = u.cells.filter(([r, c]) => !state.marks[r][c]);
+        for (let a = 0; a < empties.length; a++)
+          for (let b = a + 1; b < empties.length; b++) {
+            const A = cd[empties[a][0]][empties[a][1]], B = cd[empties[b][0]][empties[b][1]];
+            if (A.length === 2 && B.length === 2 && A[0] === B[0] && A[1] === B[1])
+              for (const [r, c] of empties)
+                if ((r !== empties[a][0] || c !== empties[a][1]) && (r !== empties[b][0] || c !== empties[b][1]))
+                  for (const v of A) remove(r, c, v);
+          }
+      }
+    }
+  }
+  function findSingles(cd, deep) {
+    const m = state.marks;
+    // naked single
+    for (let r = 0; r < 9; r++)
+      for (let c = 0; c < 9; c++)
+        if (!m[r][c] && cd[r][c].length === 1) {
+          const premise = [];
+          for (let i = 0; i < 9; i++) {
+            if (m[r][i] && i !== c) premise.push(cellAt(r, i));
+            if (m[i][c] && i !== r) premise.push(cellAt(i, c));
+          }
+          const br = r - (r % 3), bc = c - (c % 3);
+          for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) if (m[br + i][bc + j] && (br + i !== r || bc + j !== c)) premise.push(cellAt(br + i, bc + j));
+          return {
+            premise: premise, target: [cellAt(r, c)],
+            text: deep
+              ? "Basic scanning alone doesn't crack this cell, but add a locked-candidates / pair squeeze and only " + cd[r][c][0] + " survives here"
+              : "Only " + cd[r][c][0] + " fits here — its row, column and 3×3 box already contain every other digit",
+            r: r, c: c, v: cd[r][c][0]
+          };
+        }
+    // hidden single
+    for (const u of UNITS) {
+      for (let v = 1; v <= 9; v++) {
+        if (u.cells.some(([r, c]) => m[r][c] === v)) continue;
+        const spots = u.cells.filter(([r, c]) => !m[r][c] && cd[r][c].includes(v));
+        if (spots.length === 1) {
+          const [r, c] = spots[0];
+          return {
+            premise: u.cells.filter(([ur, uc]) => ur !== r || uc !== c).map(([ur, uc]) => cellAt(ur, uc)),
+            target: [cellAt(r, c)],
+            text: deep
+              ? "After the deeper eliminations, this " + u.kind + " has just one spot left for " + v
+              : "Scan this " + u.kind + " for " + v + ": every other free cell already sees a " + v + " — it can only go here",
+            r: r, c: c, v: v
+          };
+        }
+      }
+    }
+    return null;
+  }
+  function explainHint() {
+    const wrap = (f) => f && {
+      premise: f.premise, target: f.target, text: f.text,
+      apply: () => {
+        state.marks[f.r][f.c] = f.v;
+        paintCell(f.r, f.c);
+        setMessage("", "");
+        updateHighlights(); clearConflicts(); checkWin();
+      }
+    };
+    const cd = peerCands();
+    let found = findSingles(cd, false);
+    if (found) return wrap(found);
+    advancedEliminate(cd);
+    found = findSingles(cd, true);
+    if (found) return wrap(found);
+    // fallback: reveal (selected cell first)
+    let t = null;
+    if (state.sel && state.marks[state.sel.r][state.sel.c] === 0) t = [state.sel.r, state.sel.c];
+    if (!t) { for (let r = 0; r < 9 && !t; r++) for (let c = 0; c < 9; c++) if (!state.marks[r][c]) { t = [r, c]; break; } }
+    if (!t) return null;
+    return wrap({
+      premise: [], target: [cellAt(t[0], t[1])],
+      text: "This position needs a technique beyond singles and pairs — the answer here is " + state.solution[t[0]][t[1]],
+      r: t[0], c: t[1], v: state.solution[t[0]][t[1]]
+    });
   }
   function flash(cell) { if (!cell) return; cell.classList.add("is-same"); setTimeout(() => updateHighlights(), 600); }
 
   function clearBoard() {
     if (!state) return;
     for (let r = 0; r < 9; r++) for (let c = 0; c < 9; c++) if (state.puzzle[r][c] === 0) { state.marks[r][c] = 0; paintCell(r, c); }
-    state.solved = false; updateHighlights(); clearConflicts(); setMessage("", ""); startTimer();
+    state.solved = false; coach.reset(); updateHighlights(); clearConflicts(); setMessage("", ""); startTimer();
   }
   function setMessage(text, kind) { els.message.textContent = text; els.message.className = "message" + (kind ? " message--" + kind : ""); }
 
@@ -198,6 +332,8 @@
     els.statSolved = document.getElementById("stat-solved");
     els.statStreak = document.getElementById("stat-streak");
     els.statBest = document.getElementById("stat-best");
+
+    coach = window.HintCoach.create({ explain: explainHint, message: (t) => setMessage(t, "") });
 
     els.board.addEventListener("click", (e) => {
       const cell = e.target.closest && e.target.closest(".su-cell");

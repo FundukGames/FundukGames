@@ -11,6 +11,7 @@
   const els = {};
   let state = null; // { size, islands, solution, counts:{}, pairs, mode, solved, startTs, elapsedMs }
   let timerId = null;
+  let coach = null; // explanatory-hint controller (window.HintCoach)
 
   const LS = {
     get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -67,6 +68,7 @@
     els.modeLabel.textContent = mode === "daily" ? "Daily Challenge · " + todayKey() : "Unlimited · " + p.islands.length + " islands";
     if (mode === "daily") els.size.value = String(p.size);
     hideWinModal();
+    if (coach) coach.reset();
     cancelConflictTimer();
     buildBoard();
     render();
@@ -172,6 +174,7 @@
 
   function cycle(k) {
     if (state.solved) return;
+    coach.reset();
     const cur = state.counts[k] || 0;
     if (cur === 0) {
       // adding the first bridge must not cross an existing one
@@ -255,26 +258,80 @@
 
   function hint() {
     if (state.solved) return;
-    // 1) an extra bridge somewhere?
+    // an extra bridge poisons the counting — point at it first
     for (const k in state.counts) {
       if ((state.counts[k] || 0) > (state.solCounts[k] || 0)) {
+        coach.reset();
         const [a, b] = k.split("-").map(Number);
         flashIsland(a); flashIsland(b);
         setMessage("There's an extra bridge between the flashing islands.", "warn");
         return;
       }
     }
-    // 2) add one missing bridge
+    coach.press();
+  }
+
+  // ---- explanatory hints: capacity counting, spelled out -------------------
+  function explainHint() {
+    const k = state.islands.length;
+    const rem = (i) => state.islands[i].num - degree(i);
+
+    for (let i = 0; i < k; i++) {
+      const ri = rem(i);
+      if (ri <= 0) continue;
+      // neighbors that can still accept bridges from i
+      const nbs = [];
+      for (const pr of state.pairs) {
+        if (pr.a !== i && pr.b !== i) continue;
+        const j = pr.a === i ? pr.b : pr.a;
+        const kk = pairKey(i, j);
+        const placed = state.counts[kk] || 0;
+        const cap = Math.min(2 - placed, rem(j), ri);
+        if (cap <= 0) continue;
+        if (placed === 0) {
+          const bodies = bodyMap(kk);
+          if (pathCells(i, j).some((cc) => bodies[cc])) continue; // crossed off
+        }
+        nbs.push({ j: j, key: kk, cap: cap });
+      }
+      const total = nbs.reduce((s, x) => s + x.cap, 0);
+      if (total < ri) continue; // inconsistent corner — let the player untangle first
+      for (const nb of nbs) {
+        const need = ri - (total - nb.cap);
+        if (need > 0)
+          return {
+            premise: [state.islandEls[i]].concat(nbs.filter((x) => x.j !== nb.j).map((x) => state.islandEls[x.j])),
+            target: [state.islandEls[nb.j]],
+            text: "Count the capacity: the dashed island still needs " + ri + " bridge" + (ri > 1 ? "s" : "") + ", but its other neighbors can take only " + (total - nb.cap) + " in total — so at least " + need + " must go to the green island",
+            apply: () => {
+              setMessage("", "");
+              state.counts[nb.key] = (state.counts[nb.key] || 0) + need;
+              render();
+              scheduleConflicts();
+              checkWin();
+            }
+          };
+      }
+    }
+    // fallback: connectivity-flavored link from the solution
     const missing = [];
-    for (const k in state.solCounts)
-      if ((state.counts[k] || 0) < state.solCounts[k]) missing.push(k);
-    if (!missing.length) return;
-    const k = missing[Math.floor(Math.random() * missing.length)];
-    state.counts[k] = (state.counts[k] || 0) + 1;
-    const [a, b] = k.split("-").map(Number);
-    render(); flashIsland(a); flashIsland(b);
-    scheduleConflicts();
-    if (!checkWin()) setMessage("Added one bridge for you. Keep going!", "");
+    for (const kk in state.solCounts)
+      if ((state.counts[kk] || 0) < state.solCounts[kk]) missing.push(kk);
+    if (!missing.length) return null;
+    const kk = missing[Math.floor(Math.random() * missing.length)];
+    const [a, b] = kk.split("-").map(Number);
+    return {
+      premise: [],
+      target: [state.islandEls[a], state.islandEls[b]],
+      text: "No pure counting move fires here — this link comes from keeping the network in one piece. Add a bridge between the highlighted islands",
+      apply: () => {
+        setMessage("", "");
+        state.counts[kk] = (state.counts[kk] || 0) + 1;
+        render();
+        scheduleConflicts();
+        checkWin();
+      }
+    };
   }
   function flashIsland(i) {
     const g = state.islandEls[i];
@@ -287,6 +344,7 @@
     state.counts = {};
     state.solved = false;
     els.board.classList.remove("is-won");
+    coach.reset();
     render();
     cancelConflictTimer(); clearConflictMarks(); setMessage("", ""); startTimer();
   }
@@ -328,6 +386,8 @@
     els.statStreak = document.getElementById("stat-streak");
     els.statBest = document.getElementById("stat-best");
     els.size = document.getElementById("size");
+
+    coach = window.HintCoach.create({ explain: explainHint, message: (t) => setMessage(t, "") });
 
     els.board.addEventListener("click", onBoardClick);
     document.getElementById("btn-new").addEventListener("click", () => newGame("unlimited"));
